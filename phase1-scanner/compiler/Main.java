@@ -26,20 +26,27 @@ public class Main {
         }
         //PreScanner preScanner = new PreScanner(new FileReader(inputFile));
         //new FileWriter(inputFile).write(preScanner.out.toString());
-        Lexer scanner = null;
+        LexerP scanner = null;
         try {
             java.io.FileInputStream stream = new java.io.FileInputStream(inputFile);
             java.io.Reader reader = new java.io.InputStreamReader(stream);
-            scanner = new Lexer(reader);
+            scanner = new LexerP(reader);
             parser p = new parser(scanner);
+            try {
+                p.parse();
+                return true;
+            }catch (Exception ex){
+                System.out.println(ex.toString());
+                return false;
+            }
             //.out.println(scanner.out.toString());
             //return scanner.out.toString();
         } catch (Exception e) {
             System.out.println("Unexpected exception:");
             e.printStackTrace();
         }
-        return null;
 
+        return false;
         //Laxer scanner = new Laxer(new FileReader(inputFile));
     }
 }
