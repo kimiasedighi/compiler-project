@@ -182,10 +182,10 @@ BreakStatement ::= BREAK SEMICOLON;
 
 ContinueStatement ::= CONTINUE SEMICOLON;
 
-PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlusComma COMMA RIGHTPARANTHESIS SEMICOLON;
+PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlusComma RIGHTPARANTHESIS SEMICOLON;
 
 ExpressionPlusComma ::= ExpressionPlusComma COMMA Expression
-                 | Expression ;
+                      | Expression ;
 
 
 Expression ::= LValue ASSIGN Expression | IDENTIFIER ASSIGN Expression
