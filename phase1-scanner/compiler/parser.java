@@ -29,7 +29,7 @@ public class parser extends java_cup.runtime.lr_parser {
   public parser(java_cup.runtime.Scanner s, java_cup.runtime.SymbolFactory sf) {super(s,sf);}
 
   /** Production table. */
-  protected static final short _production_table[][] = 
+  protected  final short _production_table[][] = 
     unpackFromStrings(new String[] {
     "\000\171\000\002\002\004\000\002\002\003\000\002\002" +
     "\004\000\002\004\003\000\002\004\003\000\002\004\003" +
@@ -74,7 +74,7 @@ public class parser extends java_cup.runtime.lr_parser {
   public short[][] production_table() {return _production_table;}
 
   /** Parse-action table. */
-  protected static final short[][] _action_table = 
+  protected  final short[][] _action_table = 
     unpackFromStrings(new String[] {
     "\000\365\000\022\004\021\005\025\006\014\007\015\010" +
     "\023\011\005\012\004\075\010\001\002\000\004\101\367" +
@@ -754,7 +754,7 @@ public class parser extends java_cup.runtime.lr_parser {
   public short[][] action_table() {return _action_table;}
 
   /** <code>reduce_goto</code> table. */
-  protected static final short[][] _reduce_table = 
+  protected  final short[][] _reduce_table = 
     unpackFromStrings(new String[] {
     "\000\365\000\026\002\023\003\006\004\011\005\021\006" +
     "\017\007\010\010\016\011\012\033\015\034\005\001\001" +
@@ -945,7 +945,7 @@ public class parser extends java_cup.runtime.lr_parser {
 
 
      LexerP s;
-     Parser(LexerP s){ this.s=s; }
+     parser(LexerP s){ this.s=s; }
      protected void report_expected_token_ids(){ }
 
 
