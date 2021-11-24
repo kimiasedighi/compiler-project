@@ -15,7 +15,7 @@ import java.util.Map;
 %}
 
 %eof{
-System.out.println(out.toString());
+
 %eof}
 
 LineBreak = (\n|\r|\r\n)
@@ -154,6 +154,7 @@ Definition="define"{WhiteSpace}+{DefinedWord}{WhiteSpace}+{DefinedWordValue}
 
     //String detect action
      "\""               {yybegin(STRING); out.append(yytext());}
+      [^] {out.append(yytext());}
 }
 
 <STRING> {

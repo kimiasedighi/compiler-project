@@ -21,7 +21,7 @@ import java.io.IOException;
 %}
 
 %eof{
-    System.out.println(out.toString());
+
 %eof}
 
 LineBreak = (\n|\r|\r\n)
@@ -130,6 +130,8 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
 
     //String detect action
     "\""                 {yybegin(STRING); string.append(yytext());}
+     [^]                 {return tokenize(sym.error);}
+
 }
 
 <STRING> {

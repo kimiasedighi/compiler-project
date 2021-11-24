@@ -27,9 +27,10 @@ public class Main {
                 preScanner = new PreScanner(reader2);
                 preScanner.definedMap=definemap;
                 while (!preScanner.zzAtEOF) preScanner.yylex();
-                definemap=preScanner.definedMap;
+
                 FileWriter fileWriter2= new FileWriter(inputFile);
                 fileWriter2.write(preScanner.out.toString());
+                //System.out.println(preScanner.out.toString());
                 fileWriter2.flush();
                 //--------------------------------------
 
