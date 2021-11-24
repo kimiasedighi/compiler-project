@@ -5,7 +5,6 @@
 
 package compiler;
 
-
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */

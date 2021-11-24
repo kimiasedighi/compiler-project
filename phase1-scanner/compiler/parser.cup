@@ -79,8 +79,8 @@ nonterminal Expression;
 nonterminal LValue, Constant, Call, Actuals;
 
 //plus
-nonterminal DeclPlus, MacroPlus, ExpressionPlus, StatementPlus
-            , IdPlus, FieldPlus, VariableDeclPlus, VariablePlus;
+nonterminal DeclPlus, MacroPlus, ExpressionPlusComma, StatementPlus
+            , IdPlus, FieldPlus, VariableDeclPlus, VariablePlusComma;
 
 /**/
 
@@ -139,10 +139,10 @@ FunctionDecl ::= Type IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS Statem
                | IDENTIFIER IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS StatementBlock
                | VOID IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS StatementBlock;
 
-Formals ::=  VariablePlus COMMA |;
+Formals ::=  VariablePlusComma |;
 
+VariablePlusComma ::= VariablePlusComma COMMA Variable | Variable;
 
-VariablePlus ::= VariablePlus Variable | Variable;
 
 ClassDecl ::= CLASS IDENTIFIER LEFTCURLY FieldPlus  RIGHTCURLY
             | CLASS IDENTIFIER LEFTCURLY RIGHTCURLY;
@@ -182,9 +182,9 @@ BreakStatement ::= BREAK SEMICOLON;
 
 ContinueStatement ::= CONTINUE SEMICOLON;
 
-PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlus COMMA RIGHTPARANTHESIS SEMICOLON;
+PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlusComma COMMA RIGHTPARANTHESIS SEMICOLON;
 
-ExpressionPlus ::= ExpressionPlus Expression
+ExpressionPlusComma ::= ExpressionPlusComma COMMA Expression
                  | Expression ;
 
 
@@ -219,6 +219,6 @@ LValue ::= Expression DOT IDENTIFIER
 Call ::= IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS
        | Expression DOT IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS;
 
-Actuals ::= ExpressionPlus COMMA | ;
+Actuals ::= ExpressionPlusComma | ;
 
 Constant ::= INTCONST | DOUBLECONST | BOOLCONST | STRINGCONST | NULL;
