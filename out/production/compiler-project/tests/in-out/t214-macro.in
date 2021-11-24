@@ -1,0 +1,6 @@
+import "filename.d" 
+
+
+int main() {
+	
+}
