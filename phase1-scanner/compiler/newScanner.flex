@@ -135,8 +135,8 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
 <STRING> {
     "\""    {
         yybegin(YYINITIAL);
-        return tokenize(sym.STRINGCONST, string.toString() + yytext());
         string.delete(0,string.length());
+        return tokenize(sym.STRINGCONST, string.toString() + yytext());
     }
    "\\\""                {string.append(yytext());}
    .                     {string.append(yytext());}

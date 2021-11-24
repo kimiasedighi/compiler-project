@@ -8,7 +8,7 @@ parser code {:
 :}
 
 init with {:  :};
-scan with {: return s.next_Token(); :};
+scan with {: return s.next_token(); :};
 
 /* terminals */
 
