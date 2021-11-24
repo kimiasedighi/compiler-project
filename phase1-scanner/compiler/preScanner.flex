@@ -129,6 +129,7 @@ Definition="define"{WhiteSpace}+{DefinedWord}{WhiteSpace}+{DefinedWordValue}
           }
           String definedValue = stringBuilder.toString();
           definedMap.put(definedWord,definedValue);
+
       }
 
     //Literal detect action

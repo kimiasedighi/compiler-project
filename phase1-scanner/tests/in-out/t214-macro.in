@@ -1,6 +1,6 @@
-import SeemsWrongButItsOK
-define SeemsWrongButItsOK "filename.d"
+import "filename.d" 
+
 
 int main() {
-	Print(SeemsWrongButItsOK, " Imported!");
+	
 }

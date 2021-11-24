@@ -1,6 +1,7 @@
 package compiler;
 
 import java.io.FileWriter;
+import java.util.Map;
 
 public class Main {
 
@@ -8,22 +9,47 @@ public class Main {
         //StringBuilder str = new StringBuilder();
         /* dshuisdhuihdsu/*fuihfuahuhd */
         PreScanner preScanner = null;
+        Map<String,String> definemap;
         try {
             java.io.FileInputStream stream = new java.io.FileInputStream(inputFile);
             java.io.Reader reader = new java.io.InputStreamReader(stream);
             preScanner = new PreScanner(reader);
+
             while (!preScanner.zzAtEOF) preScanner.yylex();
+            definemap=preScanner.definedMap;
             FileWriter fileWriter= new FileWriter(inputFile);
             fileWriter.write(preScanner.out.toString());
             fileWriter.flush();
+            //--------------------------------------
+            try {
+                java.io.FileInputStream stream2 = new java.io.FileInputStream(inputFile);
+                java.io.Reader reader2 = new java.io.InputStreamReader(stream2);
+                preScanner = new PreScanner(reader2);
+                preScanner.definedMap=definemap;
+                while (!preScanner.zzAtEOF) preScanner.yylex();
+                definemap=preScanner.definedMap;
+                FileWriter fileWriter2= new FileWriter(inputFile);
+                fileWriter2.write(preScanner.out.toString());
+                fileWriter2.flush();
+                //--------------------------------------
+
+                //System.out.println(preScanner.out.toString());
+                //String sdsa = preScanner.out.toString();
+
+            } catch (Exception e) {
+
+                System.out.println("Unexpected exception:");
+                e.printStackTrace();
+            }
             //System.out.println(preScanner.out.toString());
-            String sdsa = preScanner.out.toString();
+            //String sdsa = preScanner.out.toString();
 
         } catch (Exception e) {
 
             System.out.println("Unexpected exception:");
             e.printStackTrace();
         }
+
         //PreScanner preScanner = new PreScanner(new FileReader(inputFile));
         //new FileWriter(inputFile).write(preScanner.out.toString());
         LexerP scanner = null;
