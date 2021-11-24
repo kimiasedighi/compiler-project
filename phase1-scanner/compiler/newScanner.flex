@@ -115,9 +115,9 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
 	"}"					 {return tokenize(sym.RIGHTCURLY);}
 
     //Literal detect action
-    {BooleanLiteral}     {return tokenize(sym.BOOLEAN, yytext());}
-    {IntLiteral}         {return tokenize(sym.INTEGER, yytext());}
-    {DoubleLiteral}      {return tokenize(sym.DOUBLE, yytext());}
+    {BooleanLiteral}     {return tokenize(sym.BOOLCONST, yytext());}
+    {IntLiteral}         {return tokenize(sym.INTCONST, yytext());}
+    {DoubleLiteral}      {return tokenize(sym.DOUBLECONST, yytext());}
 
     //Identifier detect action
     {Identifier}         {return tokenize(sym.IDENTIFIER,yytext() );}
@@ -135,7 +135,7 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
 <STRING> {
     "\""    {
         yybegin(YYINITIAL);
-        return tokenize(sym.STRING, string.toString() + yytext());
+        return tokenize(sym.STRINGCONST, string.toString() + yytext());
         string.delete(0,string.length());
     }
    "\\\""                {string.append(yytext());}
