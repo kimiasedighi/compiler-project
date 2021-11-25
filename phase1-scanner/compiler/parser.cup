@@ -70,11 +70,11 @@ nonterminal Field;
 nonterminal AccessMode;
 
 //statement
-nonterminal Statement;
-nonterminal IfStatement, WhileStatement, ForStatement;
+nonterminal Statement, OpenStatement, ClosedStatement;
+nonterminal NonIfStatement, WhileStatement, ForStatement;
 nonterminal BreakStatement, ContinueStatement, ReturnStatement ,PrintStatement;
 
-//expressions
+//expressionsOpenStatement
 nonterminal Expression;
 nonterminal LValue, Constant, Call, Actuals;
 
@@ -161,12 +161,18 @@ StatementBlock ::= LEFTCURLY RIGHTCURLY
 StatementPlus ::= StatementPlus Statement
             | Statement;
 
-Statement ::= Expression SEMICOLON | SEMICOLON | IfStatement | WhileStatement | ForStatement
-            | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
-            | StatementBlock;
+Statement ::= OpenStatement | ClosedStatement;
 
-IfStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS  Statement
-              | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement ELSE Statement;
+OpenStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement
+                | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS ClosedStatement ELSE OpenStatement;
+
+ClosedStatement ::= NonIfStatement
+              | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS ClosedStatement ELSE ClosedStatement;
+
+
+NonIfStatement ::= Expression SEMICOLON | SEMICOLON | WhileStatement | ForStatement
+                 | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
+                 | StatementBlock;
 
 WhileStatement::= WHILE LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement;
 
