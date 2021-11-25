@@ -70,11 +70,11 @@ nonterminal Field;
 nonterminal AccessMode;
 
 //statement
-nonterminal Statement, OpenStatement, ClosedStatement;
-nonterminal NonIfStatement, WhileStatement, ForStatement;
+nonterminal Statement;
+nonterminal IfStatement, WhileStatement, ForStatement, ElsePrime;
 nonterminal BreakStatement, ContinueStatement, ReturnStatement ,PrintStatement;
 
-//expressionsOpenStatement
+//expressions
 nonterminal Expression;
 nonterminal LValue, Constant, Call, Actuals;
 
@@ -85,6 +85,7 @@ nonterminal DeclPlus, MacroPlus, ExpressionPlusComma, StatementPlus
 /**/
 
 /* precedence  */
+precedence left ELSE;
 precedence left LEFTBRACKET;
 precedence left COMMA;
 precedence left ASSIGN, ASSIGNADD, ASSIGNSUB, ASSIGNMUL, ASSIGNSUB;
@@ -161,18 +162,13 @@ StatementBlock ::= LEFTCURLY RIGHTCURLY
 StatementPlus ::= StatementPlus Statement
             | Statement;
 
-Statement ::= OpenStatement | ClosedStatement;
+Statement ::= Expression SEMICOLON | SEMICOLON | IfStatement | WhileStatement | ForStatement
+            | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
+            | StatementBlock;
 
-OpenStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement
-                | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS ClosedStatement ELSE OpenStatement;
+IfStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement ElsePrime;
 
-ClosedStatement ::= NonIfStatement
-              | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS ClosedStatement ELSE ClosedStatement;
-
-
-NonIfStatement ::= Expression SEMICOLON | SEMICOLON | WhileStatement | ForStatement
-                 | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
-                 | StatementBlock;
+ElsePrime ::= ELSE Statement | ;
 
 WhileStatement::= WHILE LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement;
 
