@@ -111,14 +111,12 @@ Decl ::= VariableDecl
 DeclPlus ::= DeclPlus Decl
            | Decl;
 
-//Macro ::= IMPORT STRINGCONST
-//        | DEFINE IdPlus
-//        | DEFINE;
+Macro ::= IMPORT STRINGCONST
+        | DEFINE | DEFINE IDENTIFIER;
 
-Macro ::= IMPORT STRINGCONST;
+//Macro ::= IMPORT STRINGCONST;
 
-//IdPlus ::= IDENTIFIER
-//           | IdPlus IDENTIFIER;
+//IdPlus ::= IDENTIFIER | IdPlus IDENTIFIER |;
 
 MacroPlus ::= MacroPlus Macro
             | Macro;
@@ -216,7 +214,8 @@ Expression ::= LValue ASSIGN Expression | IDENTIFIER ASSIGN Expression
              | LINE | FUNCTION;
 
 LValue ::= Expression DOT IDENTIFIER
-         | Expression LEFTBRACKET Expression RIGHTBRACKET;
+         | Expression LEFTBRACKET Expression RIGHTBRACKET
+         | IDENTIFIER LEFTBRACKET Expression RIGHTBRACKET;
 
 Call ::= IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS
        | Expression DOT IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS;

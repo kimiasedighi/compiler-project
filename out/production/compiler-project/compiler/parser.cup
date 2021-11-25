@@ -71,7 +71,7 @@ nonterminal AccessMode;
 
 //statement
 nonterminal Statement;
-nonterminal IfStatement, WhileStatement, ForStatement;
+nonterminal IfStatement, WhileStatement, ForStatement, ElsePrime;
 nonterminal BreakStatement, ContinueStatement, ReturnStatement ,PrintStatement;
 
 //expressions
@@ -85,6 +85,7 @@ nonterminal DeclPlus, MacroPlus, ExpressionPlusComma, StatementPlus
 /**/
 
 /* precedence  */
+precedence left ELSE;
 precedence left LEFTBRACKET;
 precedence left COMMA;
 precedence left ASSIGN, ASSIGNADD, ASSIGNSUB, ASSIGNMUL, ASSIGNSUB;
@@ -110,14 +111,12 @@ Decl ::= VariableDecl
 DeclPlus ::= DeclPlus Decl
            | Decl;
 
-//Macro ::= IMPORT STRINGCONST
-//        | DEFINE IdPlus
-//        | DEFINE;
+Macro ::= IMPORT STRINGCONST
+        | DEFINE;
 
-Macro ::= IMPORT STRINGCONST;
+//Macro ::= IMPORT STRINGCONST;
 
-//IdPlus ::= IDENTIFIER
-//           | IdPlus IDENTIFIER;
+//IdPlus ::= IDENTIFIER | IdPlus IDENTIFIER |;
 
 MacroPlus ::= MacroPlus Macro
             | Macro;
@@ -165,8 +164,9 @@ Statement ::= Expression SEMICOLON | SEMICOLON | IfStatement | WhileStatement | 
             | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
             | StatementBlock;
 
-IfStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS  Statement
-              | IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement ELSE Statement;
+IfStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement ElsePrime;
+
+ElsePrime ::= ELSE Statement | ;
 
 WhileStatement::= WHILE LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement;
 
@@ -214,7 +214,8 @@ Expression ::= LValue ASSIGN Expression | IDENTIFIER ASSIGN Expression
              | LINE | FUNCTION;
 
 LValue ::= Expression DOT IDENTIFIER
-         | Expression LEFTBRACKET Expression RIGHTBRACKET;
+         | Expression LEFTBRACKET Expression RIGHTBRACKET
+         | IDENTIFIER LEFTBRACKET Expression RIGHTBRACKET;
 
 Call ::= IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS
        | Expression DOT IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS;

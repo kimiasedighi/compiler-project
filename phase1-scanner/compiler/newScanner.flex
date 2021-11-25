@@ -120,7 +120,7 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
     {DoubleLiteral}      {return tokenize(sym.DOUBLECONST, yytext());}
 
     //Identifier detect action
-    {Identifier}         {return tokenize(sym.IDENTIFIER,yytext() );}
+    {Identifier}         {return tokenize(sym.IDENTIFIER, yytext());}
 
     //WhiteSpace detect action
     {WhiteSpace}         {/*ignore*/}
