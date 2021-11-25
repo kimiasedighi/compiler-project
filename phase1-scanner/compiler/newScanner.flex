@@ -87,7 +87,7 @@ Definition="define"
     "this"               {return tokenize(sym.THIS);}
     "void"               {return tokenize(sym.VOID);}
     "while"              {return tokenize(sym.WHILE);}
-    "define"             {return tokenize(sym.DEFINE);}
+    "__df"             {return tokenize(sym.DEFINE);}
 
 	"+"					 {return tokenize(sym.ADD);}
 	"-"			    	 {return tokenize(sym.SUB);}

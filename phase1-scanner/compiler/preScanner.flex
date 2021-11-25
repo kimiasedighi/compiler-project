@@ -81,6 +81,7 @@ Definition="define"{WhiteSpace}+{DefinedWord}{WhiteSpace}+{DefinedWordValue}
     "this"               {out.append("this");}
     "void"               {out.append("void");}
     "while"              {out.append("while");}
+    "__df"             {out.append("__df");}
 
     "false"              {out.append("false");}
     "true"               {out.append("true");}
@@ -129,7 +130,7 @@ Definition="define"{WhiteSpace}+{DefinedWord}{WhiteSpace}+{DefinedWordValue}
           }
           String definedValue = stringBuilder.toString();
           definedMap.put(definedWord,definedValue);
-          out.append(newStr[0] + " def_ident");
+          out.append("__df");
       }
 
     //Literal detect action

@@ -1,5 +1,5 @@
 string emptyFuncName = __func__;
-int lineInGlobal = line;
+int lineInGlobal = __line;
 void line() {
     Print(lineInGlobal + __line__);
     Print(__func__ + emptyFuncName);

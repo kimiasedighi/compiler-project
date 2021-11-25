@@ -1,6 +1,6 @@
-define folaan another_folaan
+__df
 
 int main() {
-	int folaan;
-	folaan = 5;
+	int another_folaan ;
+	another_folaan  = 5;
 }

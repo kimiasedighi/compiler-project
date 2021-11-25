@@ -112,7 +112,7 @@ DeclPlus ::= DeclPlus Decl
            | Decl;
 
 Macro ::= IMPORT STRINGCONST
-        | DEFINE IDENTIFIER;
+        | DEFINE;
 
 MacroPlus ::= MacroPlus Macro
             | Macro;
