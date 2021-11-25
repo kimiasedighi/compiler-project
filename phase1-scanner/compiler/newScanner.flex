@@ -50,6 +50,10 @@ BooleanLiteral = "false"|"true"
 
 //id
 Identifier = [a-zA-Z][a-zA-Z0-9_]*
+
+//definition
+Definition="define"
+
 %state STRING
 %%
 
@@ -83,7 +87,7 @@ Identifier = [a-zA-Z][a-zA-Z0-9_]*
     "this"               {return tokenize(sym.THIS);}
     "void"               {return tokenize(sym.VOID);}
     "while"              {return tokenize(sym.WHILE);}
-
+    "define"             {return tokenize(sym.DEFINE);}
 
 	"+"					 {return tokenize(sym.ADD);}
 	"-"			    	 {return tokenize(sym.SUB);}
