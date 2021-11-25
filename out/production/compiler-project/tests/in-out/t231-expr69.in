@@ -3,6 +3,5 @@ int getSomeValue() {
 }
 
 void main () {
-    int[] x;
-    x[getSomeValue()] *= getSomeValue();
+    
 }
