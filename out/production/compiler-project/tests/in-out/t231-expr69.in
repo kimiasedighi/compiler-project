@@ -4,5 +4,5 @@ int getSomeValue() {
 
 void main () {
     int[] x;
-    x[getSomeValue()] *= getSomeValue();
+    0354164646541[getSomeValue()] *= getSomeValue();
 }

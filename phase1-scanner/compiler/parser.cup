@@ -216,7 +216,7 @@ Expression ::= LValue ASSIGN Expression | IDENTIFIER ASSIGN Expression
              | LINE | FUNCTION;
 
 LValue ::= Expression DOT IDENTIFIER
-         | Expression LEFTBRACKET Expression RIGHTBRACKET;
+         | Expression LEFTBRACKET Expression RIGHTBRACKET|IDENTIFIER LEFTBRACKET Expression RIGHTBRACKET;
 
 Call ::= IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS
        | Expression DOT IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS;
