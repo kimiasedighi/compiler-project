@@ -1,14 +1,20 @@
 package compiler;
 import java_cup.runtime.*;
+import AST.*;
 
 parser code {:
-     LexerP s;
-     parser(LexerP s){ this.s=s; }
-     protected void report_expected_token_ids(){ }
+     //LexerP s;
+     //parser(LexerP s){ this.s=s; }
+     //protected void report_expected_token_ids(){ }
+     protected Program root;
+
+     void setRoot(Program p) { this.root = p; }
+
+     public Program getRoot() { return this.root; }
 :}
 
-init with {:  :};
-scan with {: return s.next_token(); :};
+//init with {:  :};
+//scan with {: return s.next_token(); :};
 
 /* terminals */
 
@@ -46,41 +52,60 @@ terminal INTCONST, DOUBLECONST, STRINGCONST, BOOLCONST;
 
 /* Non terminals */
 
-nonterminal Program, Macro;
+nonterminal ASTNode Program;
+nonterminal ASTNode Macro;
 
 // declarations AND types
-nonterminal Decl, VariableDecl, FunctionDecl, ClassDecl;
+nonterminal ASTNode Decl;
+nonterminal ASTNode VariableDecl;
+nonterminal ASTNode FunctionDecl;
+nonterminal ASTNode ClassDecl;
 
 // DEFINE Variable
-nonterminal Variable;
+nonterminal ASTNode Variable;
 
 // types of definitions except VOID
-nonterminal Type;
+nonterminal ASTNode Type;
 
 // args of functions
-nonterminal Formals;
+nonterminal ASTNode Formals;
 
 //statement block
-nonterminal StatementBlock;
+nonterminal ASTNode StatementBlock;
 
 // methods AND variables in class
-nonterminal Field;
+nonterminal ASTNode Field;
 
 //PUBLIC OR PRIVATE
-nonterminal AccessMode;
+nonterminal ASTNode AccessMode;
 
 //statement
-nonterminal Statement;
-nonterminal IfStatement, WhileStatement, ForStatement, ElsePrime;
-nonterminal BreakStatement, ContinueStatement, ReturnStatement ,PrintStatement;
+nonterminal ASTNode Statement;
+nonterminal ASTNode IfStatement;
+nonterminal ASTNode WhileStatement;
+nonterminal ASTNode ForStatement;
+nonterminal ASTNode ElsePrime;
+nonterminal ASTNode BreakStatement;
+nonterminal ASTNode ContinueStatement;
+nonterminal ASTNode ReturnStatement;
+nonterminal ASTNode PrintStatement;
 
 //expressions
-nonterminal Expression;
-nonterminal LValue, Constant, Call, Actuals;
+nonterminal ASTNode Expression;
+nonterminal ASTNode LValue;
+nonterminal ASTNode Constant;
+nonterminal ASTNode Call;
+nonterminal ASTNode Actuals;
 
 //plus
-nonterminal DeclPlus, MacroPlus, ExpressionPlusComma, StatementPlus
-            , IdPlus, FieldPlus, VariableDeclPlus, VariablePlusComma;
+nonterminal ASTNode DeclPlus;
+nonterminal ASTNode MacroPlus;
+nonterminal ASTNode ExpressionPlusComma;
+nonterminal ASTNode StatementPlus;
+nonterminal ASTNode IdPlus;
+nonterminal ASTNode FieldPlus;
+nonterminal ASTNode VariableDeclPlus;
+nonterminal ASTNode VariablePlusComma;
 
 /**/
 
