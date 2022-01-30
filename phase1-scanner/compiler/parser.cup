@@ -1,6 +1,8 @@
 package compiler;
 import java_cup.runtime.*;
 import AST.*;
+import AST.Node;
+import AST.NodeType;
 
 parser code {:
      //LexerP s;
@@ -52,60 +54,60 @@ terminal INTCONST, DOUBLECONST, STRINGCONST, BOOLCONST;
 
 /* Non terminals */
 
-nonterminal ASTNode Program;
-nonterminal ASTNode Macro;
+nonterminal Node Program;
+nonterminal Node Macro;
 
 // declarations AND types
-nonterminal ASTNode Decl;
-nonterminal ASTNode VariableDecl;
-nonterminal ASTNode FunctionDecl;
-nonterminal ASTNode ClassDecl;
+nonterminal Node Decl;
+nonterminal Node VariableDecl;
+nonterminal Node FunctionDecl;
+nonterminal Node ClassDecl;
 
 // DEFINE Variable
-nonterminal ASTNode Variable;
+nonterminal Node Variable;
 
 // types of definitions except VOID
-nonterminal ASTNode Type;
+nonterminal Node Type;
 
 // args of functions
-nonterminal ASTNode Formals;
+nonterminal Node Formals;
 
 //statement block
-nonterminal ASTNode StatementBlock;
+nonterminal Node StatementBlock;
 
 // methods AND variables in class
-nonterminal ASTNode Field;
+nonterminal Node Field;
 
 //PUBLIC OR PRIVATE
-nonterminal ASTNode AccessMode;
+nonterminal Node AccessMode;
 
 //statement
-nonterminal ASTNode Statement;
-nonterminal ASTNode IfStatement;
-nonterminal ASTNode WhileStatement;
-nonterminal ASTNode ForStatement;
-nonterminal ASTNode ElsePrime;
-nonterminal ASTNode BreakStatement;
-nonterminal ASTNode ContinueStatement;
-nonterminal ASTNode ReturnStatement;
-nonterminal ASTNode PrintStatement;
+nonterminal Node Statement;
+nonterminal Node IfStatement;
+nonterminal Node WhileStatement;
+nonterminal Node ForStatement;
+nonterminal Node ElsePrime;
+nonterminal Node BreakStatement;
+nonterminal Node ContinueStatement;
+nonterminal Node ReturnStatement;
+nonterminal Node PrintStatement;
 
 //expressions
-nonterminal ASTNode Expression;
-nonterminal ASTNode LValue;
-nonterminal ASTNode Constant;
-nonterminal ASTNode Call;
-nonterminal ASTNode Actuals;
+nonterminal Node Expression;
+nonterminal Node LValue;
+nonterminal Node Constant;
+nonterminal Node Call;
+nonterminal Node Actuals;
 
 //plus
-nonterminal ASTNode DeclPlus;
-nonterminal ASTNode MacroPlus;
-nonterminal ASTNode ExpressionPlusComma;
-nonterminal ASTNode StatementPlus;
-nonterminal ASTNode IdPlus;
-nonterminal ASTNode FieldPlus;
-nonterminal ASTNode VariableDeclPlus;
-nonterminal ASTNode VariablePlusComma;
+nonterminal Node DeclPlus;
+nonterminal Node MacroPlus;
+nonterminal Node ExpressionPlusComma;
+nonterminal Node StatementPlus;
+nonterminal Node IdPlus;
+nonterminal Node FieldPlus;
+nonterminal Node VariableDeclPlus;
+nonterminal Node VariablePlusComma;
 
 /**/
 
@@ -126,60 +128,231 @@ precedence left LEFTPARANTHESIS, RIGHTPARANTHESIS, DOT;
 
 start with Program;
 
-Program  ::= DeclPlus
-           | MacroPlus DeclPlus;
+Program  ::= DeclPlus:dp
+            {: RESULT=dp; :}
+           | MacroPlus DeclPlus; // TODO
 
-Decl ::= VariableDecl
-       | FunctionDecl
-       | ClassDecl;
+Decl ::= VariableDecl:v {: RESULT=v; :}
+       | FunctionDecl:f {: RESULT=f; :}
+       | ClassDecl:c {: RESULT=c; :};
 
-DeclPlus ::= DeclPlus Decl
-           | Decl;
+DeclPlus ::= DeclPlus:dp Decl:d
+            {:RESULT=dp;
+              d.addChild(d);
+              d.setParrent(RESULT);
+            :}
+           | Decl:d
+            {:RESULT= new BaseNode(NodeType.DECLARATION);;
+              RESULT.addChild(d);
+              d.setParrent(RESULT);
+            :}
+           ;
 
-Macro ::= IMPORT STRINGCONST
+Macro ::= IMPORT STRINGCONST // TODO
         | DEFINE;
 
-MacroPlus ::= MacroPlus Macro
+MacroPlus ::= MacroPlus Macro // TODO
             | Macro;
 
-VariableDecl ::= Variable SEMICOLON;
+VariableDecl ::= Variable:v SEMICOLON {: RESULT=v; :};
 
-VariableDeclPlus ::= VariableDeclPlus VariableDecl
-                    | VariableDecl;
+VariableDeclPlus ::= VariableDeclPlus:vdp VariableDecl:vd
+            {:RESULT=vdp;
+              RESULT.addChild(vd);
+              vd.setParrent(RESULT);
+            :}
+            | VariableDecl:vd
+            {:RESULT= new BaseNode(NodeType.VARIABLES);;
+              RESULT.addChild(vd);
+              vd.setParrent(RESULT);
+            :}
+            ;
 
-Variable ::= Type IDENTIFIER | IDENTIFIER IDENTIFIER;
+Variable ::= Type:t IDENTIFIER:i
+            {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
+              RESULT.addChild(t);
+              RESULT.addChild(i);
+              t.setParent(RESULT);
+              i.setParent(RESULT);;
+              d.addChild(i);
+              t.setParrent(RESULT);
+            :}
+            | IDENTIFIER:t IDENTIFIER:i // TODO
+            {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
+              RESULT.addChild(t);
+              RESULT.addChild(i);
+              t.setParent(RESULT);
+              i.setParent(RESULT);;
+              d.addChild(i);
+              t.setParrent(RESULT);
+            :}
+            ;
 
-Type ::= INTEGER
-       | DOUBLE
-       | BOOLEAN
-       | STRING
-       | Type LEFTBRACKET RIGHTBRACKET | IDENTIFIER LEFTBRACKET RIGHTBRACKET;
+Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INT_TYPE, PrimitiveType.INT); :}
+       | DOUBLE {: RESULT = new TypeNode(NodeType.DOUBLE_TYPE, PrimitiveType.DOUBLE); :}
+       | BOOLEAN {: RESULT = new TypeNode(NodeType.BOOLEAN_TYPE, PrimitiveType.BOOL); :}
+       | STRING  {: RESULT = new TypeNode(NodeType.STRING_TYPE, PrimitiveType.STRING); :}
+       | Type:t LEFTBRACKET RIGHTBRACKET
+       {:
+         RESULT = t;
+         Node e = new BaseNode(NodeType.EMPTY_ARRAY);
+         RESULT.addChild(e);
+         e.setParent(RESULT);
+         :}
+       | IDENTIFIER:i LEFTBRACKET RIGHTBRACKET // TODO
+       {:
+         RESULT = i;
+         Node e = new BaseNode(NodeType.EMPTY_ARRAY);
+         RESULT.addChild(e);
+         e.setParent(RESULT);
+         :}
+       ;
 
-FunctionDecl ::= Type IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS StatementBlock
-               | IDENTIFIER IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS StatementBlock
-               | VOID IDENTIFIER LEFTPARANTHESIS Formals RIGHTPARANTHESIS StatementBlock;
+FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s
+         {:
+			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+			RESULT.addChild(t, i, f, s);
+			t.setParent(RESULT);
+			i.setParent(RESULT);
+			f.setParent(RESULT);
+			s.setParent(RESULT);
+        :}
+        | IDENTIFIER:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s // TODO
+        {:
+			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+			RESULT.addChild(t, i, f, s);
+			t.setParent(RESULT);
+			i.setParent(RESULT);
+			f.setParent(RESULT);
+			s.setParent(RESULT);
+       :}
+        | VOID IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s
+         {:
+            RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+            Node t = new TypeNode(NodeType.VOID, PrimitiveType.VOID);
+            RESULT.addChild(t, i, f, s);
+            t.setParent(RESULT);
+            i.setParent(RESULT);
+            f.setParent(RESULT);
+            s.setParent(RESULT);
+        :}
+        ;
 
-Formals ::=  VariablePlusComma |;
+Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
+        |;
 
-VariablePlusComma ::= VariablePlusComma COMMA Variable | Variable;
+VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v // TODO
+                    {:
+                    RESULT = vpc;
+                    RESULT.addChild(v);
+                    v.setParent(RESULT);
+                    :}
+                    | Variable:v
+                    {:
+                    RESULT = new BaseNode(NodeType.VARIABLE_PLUS_COMMA);
+                    RESULT.addChild(v);
+                    v.setParent(RESULT);
+                    :};
 
+ClassDecl ::= CLASS IDENTIFIER:i LEFTCURLY FieldPlus:fp  RIGHTCURLY
+            {:
+                RESULT = new ClassNode();
+                RESULT.addChild(i);
+                RESULT.addChild(fp);
+                i.setParent(RESULT);
+                fp.setParent(RESULT);
+            :}
+            | CLASS IDENTIFIER:i LEFTCURLY RIGHTCURLY
+            {:
+                RESULT = new ClassNode();
+                RESULT.addChild(i);
+                i.setParent(RESULT);
+            :}
+            ;
 
-ClassDecl ::= CLASS IDENTIFIER LEFTCURLY FieldPlus  RIGHTCURLY
-            | CLASS IDENTIFIER LEFTCURLY RIGHTCURLY;
+FieldPlus ::= FieldPlus:fp Field:f
+            {:
+                RESULT = fs;
+                RESULT.addChild(f);
+                f.setParent(RESULT);
+            :}
+            | Field:f
+            {:
+                RESULT = new BaseNode(NodeType.FIELDS);
+                RESULT.addChild(f);
+                f.setParent(RESULT);
+            :};
 
-FieldPlus ::= FieldPlus Field | Field;
+Field ::= AccessMode:am VariableDecl:vd
+            {:
+                RESULT = new BaseNode(NodeType.FIELD_DECLARATION);
+                RESULT.addChild(am);
+                RESULT.addChild(vd);
+                am.setParent(RESULT);
+                vd.setParent(RESULT);
+            :}
+            | AccessMode:am FunctionDecl:fd
+            {:
+                RESULT = new BaseNode(NodeType.FIELD_DECLARATION);
+                RESULT.addChild(am);
+                RESULT.addChild(fd);
+                am.setParent(RESULT);
+                fd.setParent(RESULT);
+            :};
 
-Field ::= AccessMode VariableDecl | AccessMode FunctionDecl;
-
-AccessMode ::= PRIVATE | PUBLIC |;
+AccessMode ::= PRIVATE
+            {:
+                RESULT = new BaseNode(NodeType.FUNCTION_ACCESS);
+                Node t = new BaseNode(NodeType.PRIVATE_ACCESS);
+                RESULT.addChild(t);
+                t.setParent(RESULT);
+            :}
+            | PUBLIC
+            {:
+                RESULT = new BaseNode(NodeType.FUNCTION_ACCESS);
+                Node t = new BaseNode(NodeType.PUBLIC_ACCESS);
+                RESULT.addChild(t);
+                t.setParent(RESULT);
+            :}
+            |;
 
 StatementBlock ::= LEFTCURLY RIGHTCURLY
-            | LEFTCURLY VariableDeclPlus RIGHTCURLY
-            | LEFTCURLY StatementPlus RIGHTCURLY
-            | LEFTCURLY VariableDeclPlus StatementPlus RIGHTCURLY;
+                {:
+                    RESULT = new BaseNode(NodeType.BLOCK);
+                :}
+                | LEFTCURLY VariableDeclPlus:vdp RIGHTCURLY
+                {:
+                 RESULT = new BaseNode(NodeType.BLOCK);
+                 RESULT.addChild(vdp);
+                 vdp.setParent(RESULT);
+                :}
+                | LEFTCURLY StatementPlus:sp RIGHTCURLY
+                {:
+                RESULT = new BaseNode(NodeType.BLOCK);
+                RESULT.addChild(sp);
+                sp.setParent(RESULT);
+                :}
+                | LEFTCURLY VariableDeclPlus:vdp StatementPlus:sp RIGHTCURLY
+                {:
+                 RESULT = new BaseNode(NodeType.BLOCK);
+                 RESULT.addChild(vdp);
+                 RESULT.addChild(sp);
+                 vdp.setParent(RESULT);
+                 sp.setParent(RESULT);
+                :};
 
-StatementPlus ::= StatementPlus Statement
-            | Statement;
+StatementPlus ::= StatementPlus:sp Statement:s
+             {:
+                 RESULT = sp;
+                 RESULT.addChild(s);
+                 s.setParent(RESULT);
+             :}
+            | Statement
+              {:
+                 RESULT = new BaseNode(NodeType.STATEMENTS);
+                 RESULT.addChild(s);
+                 s.setParent(RESULT);
+             :};
 
 Statement ::= Expression SEMICOLON | SEMICOLON | IfStatement | WhileStatement | ForStatement
             | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
