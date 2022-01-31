@@ -28,7 +28,6 @@ terminal RETURN, NEW, THIS, NULL, NEWARRAY;
 terminal READINTEGER, READLINE, PRINT, DTOI, ITOD, BTOI, ITOB;
 terminal PRIVATE, PUBLIC;
 
-
 //Relational Symbols:
 terminal EQUAL, NOTEQUAL, LESS, GREATER, LESSEQUAL, GREATEREQUAL;
 
@@ -129,8 +128,19 @@ precedence left LEFTPARANTHESIS, RIGHTPARANTHESIS, DOT;
 start with Program;
 
 Program  ::= DeclPlus:dp
-            {: RESULT=dp; :}
-           | MacroPlus DeclPlus; // TODO
+            {:
+            RESULT = new ProgramNode();
+            RESULT.addChild(dp);
+            dp.setParrent(RESULT);
+            :}
+           | MacroPlus:mp DeclPlus:dp // TODO
+            {:
+            RESULT = new ProgramNode();
+            RESULT.addChild(mp);
+            RESULT.addChild(dp);
+            mp.setParrent(RESULT);
+            dp.setParrent(RESULT);
+            :};
 
 Decl ::= VariableDecl:v {: RESULT=v; :}
        | FunctionDecl:f {: RESULT=f; :}
@@ -142,11 +152,10 @@ DeclPlus ::= DeclPlus:dp Decl:d
               d.setParrent(RESULT);
             :}
            | Decl:d
-            {:RESULT= new BaseNode(NodeType.DECLARATION);;
+            {:RESULT= new BaseNode(NodeType.DECLARATIONS);
               RESULT.addChild(d);
               d.setParrent(RESULT);
-            :}
-           ;
+            :};
 
 Macro ::= IMPORT STRINGCONST // TODO
         | DEFINE;
@@ -162,31 +171,28 @@ VariableDeclPlus ::= VariableDeclPlus:vdp VariableDecl:vd
               vd.setParrent(RESULT);
             :}
             | VariableDecl:vd
-            {:RESULT= new BaseNode(NodeType.VARIABLES);;
+            {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATIONS);;
               RESULT.addChild(vd);
               vd.setParrent(RESULT);
-            :}
-            ;
+            :};
 
 Variable ::= Type:t IDENTIFIER:i
             {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
+              Node id = new IdentifierNode(i);
               RESULT.addChild(t);
-              RESULT.addChild(i);
+              RESULT.addChild(id);
               t.setParent(RESULT);
-              i.setParent(RESULT);;
-              d.addChild(i);
-              t.setParrent(RESULT);
+              id.setParent(RESULT);
             :}
-            | IDENTIFIER:t IDENTIFIER:i // TODO
+            | IDENTIFIER:i1 IDENTIFIER:i2 // TODO
             {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
-              RESULT.addChild(t);
-              RESULT.addChild(i);
-              t.setParent(RESULT);
-              i.setParent(RESULT);;
-              d.addChild(i);
-              t.setParrent(RESULT);
-            :}
-            ;
+              Node id1 = new IdentifierNode(i1);
+              Node id2 = new IdentifierNode(i2);
+              RESULT.addChild(id1);
+              RESULT.addChild(id2);
+              id1.setParent(RESULT);
+              id2.setParent(RESULT);
+            :};
 
 Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INT_TYPE, PrimitiveType.INT); :}
        | DOUBLE {: RESULT = new TypeNode(NodeType.DOUBLE_TYPE, PrimitiveType.DOUBLE); :}
@@ -201,28 +207,30 @@ Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INT_TYPE, PrimitiveType.INT);
          :}
        | IDENTIFIER:i LEFTBRACKET RIGHTBRACKET // TODO
        {:
-         RESULT = i;
+         RESULT = new IdentifierNode(i);
          Node e = new BaseNode(NodeType.EMPTY_ARRAY);
          RESULT.addChild(e);
          e.setParent(RESULT);
-         :}
-       ;
+         :};
 
 FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s
          {:
 			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-			RESULT.addChild(t, i, f, s);
+			Node id = new IdentifierNode(i);
+			RESULT.addChild(t, id, f, s);
 			t.setParent(RESULT);
-			i.setParent(RESULT);
+			id.setParent(RESULT);
 			f.setParent(RESULT);
 			s.setParent(RESULT);
         :}
-        | IDENTIFIER:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s // TODO
+        | IDENTIFIER:i1 IDENTIFIER:i2 LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s // TODO
         {:
 			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-			RESULT.addChild(t, i, f, s);
-			t.setParent(RESULT);
-			i.setParent(RESULT);
+			Node id1 = new IdentifierNode(i1);
+			Node id2 = new IdentifierNode(i2);
+			RESULT.addChild(id1, id2, f, s);
+			id1.setParent(RESULT);
+			id2.setParent(RESULT);
 			f.setParent(RESULT);
 			s.setParent(RESULT);
        :}
@@ -230,16 +238,17 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
          {:
             RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
             Node t = new TypeNode(NodeType.VOID, PrimitiveType.VOID);
-            RESULT.addChild(t, i, f, s);
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(t, id, f, s);
             t.setParent(RESULT);
-            i.setParent(RESULT);
+            id.setParent(RESULT);
             f.setParent(RESULT);
             s.setParent(RESULT);
-        :}
-        ;
+        :};
 
 Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
-        |;
+        |// TODO
+         {: RESULT = null; :};
 
 VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v // TODO
                     {:
@@ -257,22 +266,23 @@ VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v // TODO
 ClassDecl ::= CLASS IDENTIFIER:i LEFTCURLY FieldPlus:fp  RIGHTCURLY
             {:
                 RESULT = new ClassNode();
-                RESULT.addChild(i);
+                Node id = new IdentifierNode(i);
+                RESULT.addChild(id);
                 RESULT.addChild(fp);
-                i.setParent(RESULT);
+                id.setParent(RESULT);
                 fp.setParent(RESULT);
             :}
             | CLASS IDENTIFIER:i LEFTCURLY RIGHTCURLY
             {:
                 RESULT = new ClassNode();
-                RESULT.addChild(i);
-                i.setParent(RESULT);
-            :}
-            ;
+                Node id = new IdentifierNode(i);
+                RESULT.addChild(id);
+                id.setParent(RESULT);
+            :};
 
 FieldPlus ::= FieldPlus:fp Field:f
             {:
-                RESULT = fs;
+                RESULT = fp;
                 RESULT.addChild(f);
                 f.setParent(RESULT);
             :}
@@ -314,7 +324,8 @@ AccessMode ::= PRIVATE
                 RESULT.addChild(t);
                 t.setParent(RESULT);
             :}
-            |;
+            |// TODO
+            {: RESULT = null; :};
 
 StatementBlock ::= LEFTCURLY RIGHTCURLY
                 {:
@@ -354,66 +365,646 @@ StatementPlus ::= StatementPlus:sp Statement:s
                  s.setParent(RESULT);
              :};
 
-Statement ::= Expression SEMICOLON | SEMICOLON | IfStatement | WhileStatement | ForStatement
-            | BreakStatement | ContinueStatement | ReturnStatement | PrintStatement
-            | StatementBlock;
+Statement ::= Expression:e SEMICOLON
+            {:
+              RESULT = new BaseNode(NodeType.STATEMENT);
+              RESULT.addChild(e);
+              e.setParent(RESULT);
+            :}
+            | SEMICOLON
+          {:
+            Node t = new BaseNode(NodeType.EMPTY_STATEMENT);
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+          :}
+            | IfStatement:i
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(i);
+            i.setParent(RESULT);
+         :}
+            | WhileStatement:w
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(w);
+            w.setParent(RESULT);
+         :}
+            | ForStatement:f
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(f);
+            f.setParent(RESULT);
+         :}
+            | BreakStatement:b
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(b);
+            b.setParent(RESULT);
+         :}
+            | ContinueStatement:c
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(c);
+            c.setParent(RESULT);
+         :}
+            | ReturnStatement:r
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(r);
+            r.setParent(RESULT);
+         :}
+            | PrintStatement:p
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(p);
+            p.setParent(RESULT);
+         :}
+            | StatementBlock:s
+         {:
+            RESULT = new BaseNode(NodeType.STATEMENT);
+            RESULT.addChild(s);
+            s.setParent(RESULT);
+         :};
 
-IfStatement ::= IF LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement ElsePrime;
+IfStatement ::= IF LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS Statement:s ElsePrime:ep
+            {:
+                RESULT = new BaseNode(NodeType.IF_STATEMENT);
+                RESULT.addChild(e, s, ep);
+                e.setParent(RESULT);
+                s.setParent(RESULT);
+                ep.setParrent(RESULT);
+            :}
+;
 
-ElsePrime ::= ELSE Statement | ;
+ElsePrime ::= ELSE Statement:s
+            {:
+                RESULT = new BaseNode(NodeType.IF_STATEMENT);
+                RESULT.addChild(s);
+                s.setParent(RESULT);
+            :}
+            |// TODO
+            {: RESULT = null; :};
 
-WhileStatement::= WHILE LEFTPARANTHESIS Expression RIGHTPARANTHESIS Statement;
+WhileStatement::= WHILE LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS Statement:s
+          {:
+            RESULT = new BaseNode(NodeType.WHILE_STATEMENT);
+            RESULT.addChild(e, s);
+            e.setParent(RESULT);
+            s.setParent(RESULT);
+         :};
 
-ForStatement ::= FOR LEFTPARANTHESIS SEMICOLON Expression SEMICOLON RIGHTPARANTHESIS Statement
-               | FOR LEFTPARANTHESIS Expression SEMICOLON Expression SEMICOLON RIGHTPARANTHESIS Statement
-               | FOR LEFTPARANTHESIS  SEMICOLON Expression SEMICOLON Expression RIGHTPARANTHESIS Statement
-               | FOR LEFTPARANTHESIS Expression SEMICOLON Expression SEMICOLON Expression RIGHTPARANTHESIS Statement;
+ForStatement ::= FOR LEFTPARANTHESIS SEMICOLON Expression:e2 SEMICOLON RIGHTPARANTHESIS Statement:s
+            {:
+                RESULT = new BaseNode(NodeType.FOR_STATEMENT);
+                RESULT.addChild(e2, s);
+                e2.setParent(RESULT);
+                s.setParent(RESULT);
+            :}
+               | FOR LEFTPARANTHESIS Expression:e1 SEMICOLON Expression:e2 SEMICOLON RIGHTPARANTHESIS Statement:s
+            {:
+                RESULT = new BaseNode(NodeType.FOR_STATEMENT);
+                RESULT.addChild(e1,e2,s);
+                e1.setParent(RESULT);
+                e2.setParent(RESULT);
+                s.setParent(RESULT);
+            :}
+               | FOR LEFTPARANTHESIS  SEMICOLON Expression:e2 SEMICOLON Expression:e3 RIGHTPARANTHESIS Statement:s
+            {:
+                RESULT = new BaseNode(NodeType.FOR_STATEMENT);
+                RESULT.addChild(e2,s,e3);
+                e2.setParent(RESULT);
+                e3.setParent(RESULT);
+                s.setParent(RESULT);
+            :}
+               | FOR LEFTPARANTHESIS Expression:e1 SEMICOLON Expression:e2 SEMICOLON Expression:e3 RIGHTPARANTHESIS Statement:s
+            {:
+                RESULT = new BaseNode(NodeType.FOR_STATEMENT);
+                RESULT.addChild(e1,e2,s,e3);
+                e1.setParent(RESULT);
+                e2.setParent(RESULT);
+                e3.setParent(RESULT);
+                s.setParent(RESULT);
+            :};
 
 ReturnStatement ::= RETURN SEMICOLON
-                  | RETURN Expression SEMICOLON;
+                {:
+                    RESULT = new BaseNode(NodeType.RETURN_STATEMENT);
+                :}
+                  | RETURN Expression SEMICOLON
+                {:
+                    RESULT = new BaseNode(NodeType.RETURN_STATEMENT);
+                    RESULT.addChild(e);
+                    e.setParent(RESULT);
+                :};
 
-BreakStatement ::= BREAK SEMICOLON;
+BreakStatement ::= BREAK SEMICOLON
+                {:
+                    RESULT = new BaseNode(NodeType.BREAK_STATEMENT);
+                :};
 
-ContinueStatement ::= CONTINUE SEMICOLON;
+ContinueStatement ::= CONTINUE SEMICOLON
+                {:
+                    RESULT = new BaseNode(NodeType.CONTINUE_STATEMENT);
+                :};
 
-PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlusComma RIGHTPARANTHESIS SEMICOLON;
+PrintStatement ::= PRINT LEFTPARANTHESIS ExpressionPlusComma:epc RIGHTPARANTHESIS SEMICOLON
+                {:
+                    RESULT = new BaseNode(NodeType.PRINT_STATEMENT);
+                    RESULT.addChild(epc);
+                    epc.setParent(RESULT);
+                :};
 
-ExpressionPlusComma ::= ExpressionPlusComma COMMA Expression
-                      | Expression ;
+ExpressionPlusComma ::= ExpressionPlusComma:epc COMMA Expression:e
+                {:
+                    RESULT = epc;
+                    RESULT.addChild(e);
+                    e.setParent(RESULT);
+                :}
+                | Expression:e
+                {:
+                    RESULT = new BaseNode(NodeType.EXPRESSION_PLUS_COMMA);
+                    RESULT.addChild(e);
+                    e.setParent(RESULT);
+                :};
 
+Expression ::= LValue:l ASSIGN Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN);
+            t.addChild(l);
+            t.addChild(e);
+            l.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | IDENTIFIER:i ASSIGN Expression:e // TODO
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            t.addChild(e);
+            id.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | LValue:l ASSIGNADD Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_ADD);
+            t.addChild(l);
+            t.addChild(e);
+            l.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | IDENTIFIER:i ASSIGNADD Expression:e // TODO
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_ADD);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            t.addChild(e);
+            id.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | LValue:l ASSIGNSUB Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_SUB);
+            t.addChild(l);
+            t.addChild(e);
+            l.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | IDENTIFIER:i ASSIGNSUB Expression:e // TODO
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_SUB);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            t.addChild(e);
+            id.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | LValue:l ASSIGNMUL Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_MUL);
+            t.addChild(l);
+            t.addChild(e);
+            l.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | IDENTIFIER:i ASSIGNMUL Expression:e // TODO
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_MUL);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            t.addChild(e);
+            id.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | LValue:l ASSIGNDIV Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_DIV);
+            t.addChild(l);
+            t.addChild(e);
+            l.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | IDENTIFIER:i ASSIGNDIV Expression:e
+         {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ASSIGN_DIV);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            t.addChild(e);
+            id.setParent(t);
+            e.setParent(t);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | Constant:c
+        {:
+            RESULT = new ExpressionNode();
+            RESULT.addChild(c);
+            c.setParent(RESULT);
+        :}
+         | LValue:l
+        {:
+            RESULT = new ExpressionNode();
+            RESULT.addChild(l);
+            l.setParent(RESULT);
+        :}
+         | IDENTIFIER:i // TODO
+        {:
+            RESULT = new ExpressionNode();
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(id);
+            id.setParent(RESULT);
+        :}
+         | THIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.THIS);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | Call:c
+         {:
+            RESULT = new ExpressionNode();
+            RESULT.addChild(c);
+            c.setParent(RESULT);
+        :}
+         | LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS
+         {:
+            RESULT = e;
+        :}
+         | Expression:e1 ADD Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ADDITION);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 SUB Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.SUBTRACTION);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 MUL Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.MULTIPLICATION);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 DIV Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.DIVISION);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 MOD Expression:e2
+          {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.MOD);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | SUB Expression:e
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.NEGATIVE);
+            t.addChild(e);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+            e.setParent(t);
+        :}
+         | Expression:e1 LESS Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.LESS_THAN);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 LESSEQUAL Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.LESS_EQUAL);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 GREATER Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.GREATER_THAN);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 GREATEREQUAL Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.GREATER_EQUAL);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 EQUAL Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.EQUAL);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 NOTEQUAL Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.NOT_EQUAL);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 AND Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.AND);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | Expression:e1 OR Expression:e2
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.OR);
+            t.addChild(e1);
+            t.addChild(e2);
+            RESULT.addChild(t);
+            e1.setParent(t);
+            e2.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | NOT Expression:e
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.NOT);
+            t.addChild(e);
+            RESULT.addChild(t);
+            e.setParent(t);
+            t.setParent(RESULT);
+        :}
+         | READINTEGER LEFTPARANTHESIS RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.READ_INTEGER);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | READLINE LEFTPARANTHESIS RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.READ_LINE);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | NEW IDENTIFIER:i
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.NEW_IDENTIFIER);
+            Node id = new IdentifierNode(i);
+            t.addChild(id);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+            id.setParent(t);
+        :}
+         | NEWARRAY LEFTPARANTHESIS Expression:e COMMA Type:t RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node n = new BaseNode(NodeType.NEW_ARRAY);
+            n.addChild(e);
+            n.addChild(t);
+            RESULT.addChild(n);
+            n.setParent(RESULT);
+            e.setParent(n);
+            t.setParent(n);
+        :}
+         | NEWARRAY LEFTPARANTHESIS Expression:e COMMA IDENTIFIER:i RIGHTPARANTHESIS // TODO
+        {:
+            RESULT = new ExpressionNode();
+            Node n = new BaseNode(NodeType.NEW_ARRAY);
+            Node id = new IdentifierNode(i);
+            n.addChild(e);
+            n.addChild(id);
+            RESULT.addChild(n);
+            n.setParent(RESULT);
+            e.setParent(n);
+            id.setParent(n);
+        :}
+         | ITOD LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ITOD);
+            t.addChild(e);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+            e.setParent(t);
+        :}
+         | DTOI LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.DTOI);
+            t.addChild(e);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+            e.setParent(t);
+        :}
+         | ITOB LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.ITOB);
+            t.addChild(e);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+            e.setParent(t);
+        :}
+         | BTOI LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS
+         {:
+             RESULT = new ExpressionNode();
+             Node t = new BaseNode(NodeType.BTOI);
+             t.addChild(e);
+             RESULT.addChild(t);
+             t.setParent(RESULT);
+             e.setParent(t);
+         :}
+         | LINE // TODO
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.LINE);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :}
+         | FUNCTION // TODO
+        {:
+            RESULT = new ExpressionNode();
+            Node t = new BaseNode(NodeType.FUNCTION);
+            RESULT.addChild(t);
+            t.setParent(RESULT);
+        :};
 
-Expression ::= LValue ASSIGN Expression | IDENTIFIER ASSIGN Expression
-             | LValue ASSIGNADD Expression | IDENTIFIER ASSIGNADD Expression
-             | LValue ASSIGNSUB Expression | IDENTIFIER ASSIGNSUB Expression
-             | LValue ASSIGNMUL Expression | IDENTIFIER ASSIGNMUL Expression
-             | LValue ASSIGNDIV Expression | IDENTIFIER ASSIGNDIV Expression
-             | Constant | LValue | IDENTIFIER
-             | THIS | Call
-             | LEFTPARANTHESIS Expression RIGHTPARANTHESIS
-             | Expression ADD Expression | Expression SUB Expression
-             | Expression MUL Expression | Expression DIV Expression | Expression MOD Expression
-             | SUB Expression
-             | Expression LESS Expression | Expression LESSEQUAL Expression
-             | Expression GREATER Expression | Expression GREATEREQUAL Expression
-             | Expression EQUAL Expression | Expression NOTEQUAL Expression
-             | Expression AND Expression | Expression OR Expression | NOT Expression
-             | READINTEGER LEFTPARANTHESIS RIGHTPARANTHESIS
-             | READLINE LEFTPARANTHESIS RIGHTPARANTHESIS
-             | NEW IDENTIFIER | NEWARRAY LEFTPARANTHESIS Expression COMMA Type RIGHTPARANTHESIS
-             | NEWARRAY LEFTPARANTHESIS Expression COMMA IDENTIFIER RIGHTPARANTHESIS
-             | ITOD LEFTPARANTHESIS Expression RIGHTPARANTHESIS
-             | DTOI LEFTPARANTHESIS Expression RIGHTPARANTHESIS
-             | ITOB LEFTPARANTHESIS Expression RIGHTPARANTHESIS
-             | BTOI LEFTPARANTHESIS Expression RIGHTPARANTHESIS
-             | LINE | FUNCTION;
+LValue ::= Expression:e DOT IDENTIFIER:i
+        {:
+            RESULT = new BaseNode(NodeType.LVALUE);
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(id);
+            RESULT.addChild(e);
+            id.setParent(RESULT);
+            e.setParent(RESULT);
+        :}
+         | Expression:e1 LEFTBRACKET Expression:e2 RIGHTBRACKET
+        {:
+            RESULT = new BaseNode(NodeType.LVALUE);
+            RESULT.addChild(e1);
+            RESULT.addChild(e2);
+            e1.setParent(RESULT);
+            e2.setParent(RESULT);
+        :}
+         | IDENTIFIER:i LEFTBRACKET Expression:e RIGHTBRACKET // TODO
+        {:
+            RESULT = new BaseNode(NodeType.LVALUE);
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(id);
+            RESULT.addChild(e);
+            id.setParent(RESULT);
+            e.setParent(RESULT);
+        :};
 
-LValue ::= Expression DOT IDENTIFIER
-         | Expression LEFTBRACKET Expression RIGHTBRACKET
-         | IDENTIFIER LEFTBRACKET Expression RIGHTBRACKET;
+Call ::= IDENTIFIER:i LEFTPARANTHESIS Actuals:a RIGHTPARANTHESIS
+        {:
+            RESULT = new BaseASTNode(NodeType.CALL);
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(id);
+            RESULT.addChild(a);
+            id.setParent(RESULT);
+            a.setParent(RESULT);
+        :}
+       | Expression:e DOT IDENTIFIER:i LEFTPARANTHESIS Actuals:a RIGHTPARANTHESIS
+        {:
+            RESULT = new BaseNode(NodeType.CALL);
+            Node id = new IdentifierNode(i);
+            RESULT.addChild(e);
+            RESULT.addChild(id);
+            RESULT.addChild(a);
+            e.setParent(RESULT);
+            id.setParent(RESULT);
+            a.setParent(RESULT);
+        :};
 
-Call ::= IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS
-       | Expression DOT IDENTIFIER LEFTPARANTHESIS Actuals RIGHTPARANTHESIS;
+Actuals ::= ExpressionPlusComma:e
+            {:
+                RESULT = new BaseNode(NodeType.ACTUALS);
+                RESULT.addChild(e);
+                e.setParent(RESULT);
+            :}
+            | // TODO
+            {:
+                RESULT = null;
+            :};
 
-Actuals ::= ExpressionPlusComma | ;
-
-Constant ::= INTCONST | DOUBLECONST | BOOLCONST | STRINGCONST | NULL;
+Constant ::= INTCONST:i
+        {: RESULT = new IntegerLiteralNode(i); :}
+            | DOUBLECONST:d
+        {: RESULT = new DoubleLiteralNode(d); :}
+            | BOOLCONST:b
+        {: RESULT = new BooleanLiteralNode(b); :}
+            | STRINGCONST:s
+        {: RESULT = new StringLiteralNode(s); :}
+            | NULL:n
+        {: RESULT = new BaseNode(NodeType.NULL_LITERAL); :}
+        ;
