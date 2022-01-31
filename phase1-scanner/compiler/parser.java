@@ -1405,7 +1405,7 @@ class CUP$parser$actions {
           case 27: // Formals ::= 
             {
               Node RESULT =null;
-
+		 RESULT=new BaseNode(NodeType.EMPTY_NODE); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Formals",8, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1593,7 +1593,7 @@ class CUP$parser$actions {
           case 38: // AccessMode ::= 
             {
               Node RESULT =null;
-
+		 RESULT = new BaseNode(NodeType.EMPTY_NODE); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("AccessMode",11, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1899,7 +1899,7 @@ class CUP$parser$actions {
           case 57: // ElsePrime ::= 
             {
               Node RESULT =null;
-
+		 RESULT=new BaseNode(NodeType.EMPTY_NODE); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("ElsePrime",16, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -3143,7 +3143,7 @@ class CUP$parser$actions {
           case 118: // Actuals ::= 
             {
               Node RESULT =null;
-
+		 RESULT = new BaseNode(NodeType.EMPTY_NODE); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Actuals",25, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;

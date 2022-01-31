@@ -1,5 +1,8 @@
 package compiler;
 
+import AST.ProgramNode;
+
+import java.io.File;
 import java.io.FileWriter;
 import java.util.Map;
 
@@ -30,20 +33,14 @@ public class Main {
 
                 FileWriter fileWriter2= new FileWriter(inputFile);
                 fileWriter2.write(preScanner.out.toString());
-                //System.out.println(preScanner.out.toString());
                 fileWriter2.flush();
                 //--------------------------------------
-
-                //System.out.println(preScanner.out.toString());
-                //String sdsa = preScanner.out.toString();
 
             } catch (Exception e) {
 
                 System.out.println("Unexpected exception:");
                 e.printStackTrace();
             }
-            //System.out.println(preScanner.out.toString());
-            //String sdsa = preScanner.out.toString();
 
         } catch (Exception e) {
 
@@ -61,13 +58,14 @@ public class Main {
             parser p = new parser(scanner);
             try {
                 p.parse();
+                ProgramNode root = p.getRoot();
+
                 return true;
             }catch (Exception ex){
                 System.out.println(ex.toString());
                 return false;
             }
-            //.out.println(scanner.out.toString());
-            //return scanner.out.toString();
+
         } catch (Exception e) {
             System.out.println("Unexpected exception:");
             e.printStackTrace();
@@ -75,5 +73,17 @@ public class Main {
 
         return false;
         //Laxer scanner = new Laxer(new FileReader(inputFile));
+    }
+
+    public static void main(String[] args) throws Exception {
+
+//        File file1 = new File("C:\\Users\\dell\\IdeaProjects\\compiler-project\\phase1-scanner\\tests\\t13-macro1.in");
+//        String string1=Main.run(file1);
+//        File file2 = new File("C:\\Users\\dell\\IdeaProjects\\compiler-project\\phase1-scanner\\tests\\t14-macro2.in");
+//        String string2=Main.run(file2);
+        /* dshuisdhuihdsu/*fuihfuahuhd */
+        File file3 = new File("D:\\University-term7\\compiler-project\\phase1-scanner\\compiler\\test.txt");
+        boolean result=Main.run(file3);
+
     }
 }

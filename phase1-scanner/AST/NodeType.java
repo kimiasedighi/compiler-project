@@ -91,4 +91,6 @@ public enum NodeType {
 
     LITERAL,
     NULL_LITERAL,
+
+    EMPTY_NODE,
 }

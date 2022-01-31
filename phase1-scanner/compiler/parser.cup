@@ -247,7 +247,7 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
         :};
 
 Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
-        |;
+        |{: RESULT=new BaseNode(NodeType.EMPTY_NODE); :};
 
 VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v // TODO
                     {:
@@ -323,7 +323,7 @@ AccessMode ::= PRIVATE
                 RESULT.addChild(t);
                 t.setParent(RESULT);
             :}
-            |;
+            |{: RESULT = new BaseNode(NodeType.EMPTY_NODE); :};
 
 StatementBlock ::= LEFTCURLY RIGHTCURLY
                 {:
@@ -441,7 +441,7 @@ ElsePrime ::= ELSE Statement:s
                 RESULT.addChild(s);
                 s.setParent(RESULT);
             :}
-            |;
+            |{: RESULT=new BaseNode(NodeType.EMPTY_NODE); :};
 
 WhileStatement::= WHILE LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS Statement:s
           {:
@@ -989,7 +989,7 @@ Actuals ::= ExpressionPlusComma:e
                 RESULT.addChild(e);
                 e.setParent(RESULT);
             :}
-            |;
+            |{: RESULT = new BaseNode(NodeType.EMPTY_NODE); :};
 
 Constant ::= INTCONST:i
         {: RESULT = new IntegerLiteralNode((int)i); :}
