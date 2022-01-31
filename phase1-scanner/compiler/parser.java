@@ -1013,6 +1013,7 @@ class CUP$parser$actions {
 		
             RESULT = new ProgramNode();
             RESULT.addChild(dp);
+            setRoot((ProgramNode)RESULT);
             dp.setParent(RESULT);
             
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Program",0, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);

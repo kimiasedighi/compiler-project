@@ -131,6 +131,7 @@ Program  ::= DeclPlus:dp
             {:
             RESULT = new ProgramNode();
             RESULT.addChild(dp);
+            setRoot((ProgramNode)RESULT);
             dp.setParent(RESULT);
             :}
            | MacroPlus:mp DeclPlus:dp // TODO
