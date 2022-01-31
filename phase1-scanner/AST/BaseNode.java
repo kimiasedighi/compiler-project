@@ -56,6 +56,10 @@ public class BaseNode implements Node {
         children.add(index, node);
     }
 
+    public void addChild(Node... nodes) {
+        Collections.addAll(children, nodes);
+    }
+
     @Override
     public void addChildren(List<Node> nodes) {
         children.addAll(nodes);

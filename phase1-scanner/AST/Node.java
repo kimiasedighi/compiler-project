@@ -24,6 +24,8 @@ public interface Node {
     //Adds a node to the list of children at the specified location.
     void addChild(int index, Node node);
 
+    void addChild(Node... nodes);
+
     //Returns the child at the specified location.
     Node getChild(int index);
 
