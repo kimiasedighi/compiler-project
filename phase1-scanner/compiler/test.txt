@@ -1,6 +1,5 @@
-//dfhduygygfyfiufgfyg
 void main(){
     string a;
-    a = "ijuiuijuijuujuj";
+    a = "hi";
 
 }
