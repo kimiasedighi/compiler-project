@@ -241,6 +241,7 @@ public class cgenVisitor implements Visitor {
         System.out.println(dataSegment);
         System.out.println(codeSegment);
     }
+
     /*..........*/
     private void visitAllChildren(Node node) throws Exception {
         for (Node child : node.getChildren()) {
