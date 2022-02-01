@@ -1,4 +1,4 @@
-package CodeGen;
+package cgen;
 
 import java.util.HashMap;
 
