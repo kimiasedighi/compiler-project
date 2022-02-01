@@ -103,7 +103,6 @@ nonterminal Node DeclPlus;
 nonterminal Node MacroPlus;
 nonterminal Node ExpressionPlusComma;
 nonterminal Node StatementPlus;
-nonterminal Node IdPlus;
 nonterminal Node FieldPlus;
 nonterminal Node VariableDeclPlus;
 nonterminal Node VariablePlusComma;
@@ -993,11 +992,11 @@ Actuals ::= ExpressionPlusComma:e
             |{: RESULT = new BaseNode(NodeType.EMPTY_NODE); :};
 
 Constant ::= INTCONST:i
-        {: RESULT = new IntegerLiteralNode((int)i); :}
+        {: RESULT = new IntegerLiteralNode(Integer.parseInt((String)i)); :}
             | DOUBLECONST:d
-        {: RESULT = new DoubleLiteralNode((float)d); :}
+        {: RESULT = new DoubleLiteralNode(Float.parseFloat((String)d)); :}
             | BOOLCONST:b
-        {: RESULT = new BooleanLiteralNode((boolean)b); :}
+        {: RESULT = new BooleanLiteralNode(Boolean.parseBoolean((String)b)); :}
             | STRINGCONST:s
         {: RESULT = new StringLiteralNode((String)s); :}
             | NULL:n
