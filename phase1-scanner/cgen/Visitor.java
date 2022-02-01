@@ -3,5 +3,5 @@ package cgen;
 import AST.Node;
 
 public interface Visitor {
- public  void visit(Node node);
+ public  void visit(Node node) throws Exception ;
 }

@@ -134,7 +134,7 @@ Program  ::= DeclPlus:dp
             dp.setParent(RESULT);
 
             :}
-           | MacroPlus:mp DeclPlus:dp // TODO
+           | MacroPlus:mp DeclPlus:dp //TODO
             {:
             RESULT = new ProgramNode();
             RESULT.addChild(mp);
@@ -158,10 +158,10 @@ DeclPlus ::= DeclPlus:dp Decl:d
               d.setParent(RESULT);
             :};
 
-Macro ::= IMPORT STRINGCONST // TODO
+Macro ::= IMPORT STRINGCONST //TODO
         | DEFINE;
 
-MacroPlus ::= MacroPlus Macro // TODO
+MacroPlus ::= MacroPlus Macro //TODO
             | Macro;
 
 VariableDecl ::= Variable:v SEMICOLON {: RESULT=v; :};
@@ -185,7 +185,7 @@ Variable ::= Type:t IDENTIFIER:i
               t.setParent(RESULT);
               id.setParent(RESULT);
             :}
-            | IDENTIFIER:i1 IDENTIFIER:i2 // TODO
+            | IDENTIFIER:i1 IDENTIFIER:i2 //TODO
             {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
               Node id1 = new IdentifierNode((String)i1);
               Node id2 = new IdentifierNode((String)i2);
@@ -206,7 +206,7 @@ Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INTEGER_TYPE, PrimitiveType.I
          RESULT.addChild(e);
          e.setParent(RESULT);
          :}
-       | IDENTIFIER:i LEFTBRACKET RIGHTBRACKET // TODO
+       | IDENTIFIER:i LEFTBRACKET RIGHTBRACKET //TODO
        {:
          RESULT = new IdentifierNode((String)i);
          Node e = new BaseNode(NodeType.EMPTY_ARRAY);
@@ -250,7 +250,7 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
 Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
         |{: RESULT=new BaseNode(NodeType.EMPTY_NODE); :};
 
-VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v // TODO
+VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v //TODO
                     {:
                     RESULT = vpc;
                     RESULT.addChild(v);
@@ -537,7 +537,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             RESULT.addChild(t);
             t.setParent(RESULT);
         :}
-         | IDENTIFIER:i ASSIGN Expression:e // TODO
+         | IDENTIFIER:i ASSIGN Expression:e //TODO
          {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.ASSIGN);
@@ -560,7 +560,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             RESULT.addChild(t);
             t.setParent(RESULT);
         :}
-         | IDENTIFIER:i ASSIGNADD Expression:e // TODO
+         | IDENTIFIER:i ASSIGNADD Expression:e //TODO
          {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.ASSIGN_ADD);
@@ -583,7 +583,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             RESULT.addChild(t);
             t.setParent(RESULT);
         :}
-         | IDENTIFIER:i ASSIGNSUB Expression:e // TODO
+         | IDENTIFIER:i ASSIGNSUB Expression:e //TODO
          {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.ASSIGN_SUB);
@@ -606,7 +606,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             RESULT.addChild(t);
             t.setParent(RESULT);
         :}
-         | IDENTIFIER:i ASSIGNMUL Expression:e // TODO
+         | IDENTIFIER:i ASSIGNMUL Expression:e //TODO
          {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.ASSIGN_MUL);
@@ -653,7 +653,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             RESULT.addChild(l);
             l.setParent(RESULT);
         :}
-         | IDENTIFIER:i // TODO
+         | IDENTIFIER:i //TODO
         {:
             RESULT = new ExpressionNode();
             Node id = new IdentifierNode((String)i);
@@ -873,7 +873,7 @@ Expression ::= LValue:l ASSIGN Expression:e
             e.setParent(n);
             t.setParent(n);
         :}
-         | NEWARRAY LEFTPARANTHESIS Expression:e COMMA IDENTIFIER:i RIGHTPARANTHESIS // TODO
+         | NEWARRAY LEFTPARANTHESIS Expression:e COMMA IDENTIFIER:i RIGHTPARANTHESIS //TODO
         {:
             RESULT = new ExpressionNode();
             Node n = new BaseNode(NodeType.NEW_ARRAY);
@@ -921,14 +921,14 @@ Expression ::= LValue:l ASSIGN Expression:e
              t.setParent(RESULT);
              e.setParent(t);
          :}
-         | LINE // TODO
+         | LINE //TODO
         {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.LINE);
             RESULT.addChild(t);
             t.setParent(RESULT);
         :}
-         | FUNCTION // TODO
+         | FUNCTION //TODO
         {:
             RESULT = new ExpressionNode();
             Node t = new BaseNode(NodeType.FUNCTION);
@@ -953,7 +953,7 @@ LValue ::= Expression:e DOT IDENTIFIER:i
             e1.setParent(RESULT);
             e2.setParent(RESULT);
         :}
-         | IDENTIFIER:i LEFTBRACKET Expression:e RIGHTBRACKET // TODO
+         | IDENTIFIER:i LEFTBRACKET Expression:e RIGHTBRACKET //TODO
         {:
             RESULT = new BaseNode(NodeType.LVALUE);
             Node id = new IdentifierNode((String)i);
