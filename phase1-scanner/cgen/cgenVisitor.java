@@ -8,6 +8,7 @@ import AST.PrimitiveType;
 public class cgenVisitor implements Visitor {
     String dataSegment;
     String codeSegment;
+    private SymbolTable symbolTable = new SymbolTable();
 
     @Override
     public void visit(Node node) throws Exception{
@@ -225,4 +226,79 @@ public class cgenVisitor implements Visitor {
             default:
         }
     }
+    /*..........*/
+    private void visitStartNode(Node node) throws Exception {
+        dataSegment = ".data";
+        codeSegment += ".text\n" + "\t.globl main\n\n";
+        codeSegment += "\tmain:\n";
+
+        symbolTable.enterScope("global");
+        visitAllChildren(node);
+
+        codeSegment += "\t\t#END OF PROGRAM\n";
+        codeSegment += "\t\tli $v0,10\n\t\tsyscall\n";
+
+        System.out.println(dataSegment);
+        System.out.println(codeSegment);
+    }
+    /*..........*/
+    private void visitAllChildren(Node node) throws Exception {
+        for (Node child : node.getChildren()) {
+            visit(child);
+        }
+    }
+    /*..........*/
+    private void visitFunctionDeclarationNode(Node node) throws Exception {
+        Node returnTypeNode = node.getChild(0); // type - identifier - void
+        visit(returnTypeNode);
+//        SymbolInfo returnType = returnTypeNode.getSymbolInfo();
+
+        IdentifierNode idNode = (IdentifierNode) node.getChild(1); // identifier node
+        String funcName = idNode.getValue(); // function name
+
+//        Function func_temp = new Function(funcName, returnType, symbolTable.getCurrentScope());
+//        for (Function function : functions) {
+//            if (function.equals(func_temp)) {
+//                Function.currentFunction = function;
+//                break;
+//            }
+//        }
+        String label = symbolTable.getCurrentScopeName() + "_" + funcName;
+        codeSegment += "\t" + label + ":\n";
+        symbolTable.enterScope(label);
+        codeSegment += "\t\tsw $ra,0($sp)\n";
+        Node argumentsNode = node.getChild(2);
+        visit(argumentsNode);
+        codeSegment += "\t\taddi $sp,$sp,4\n";
+        Node statementsNode = node.getChild(3);
+        visit(statementsNode);
+        codeSegment += "\t\taddi $sp,$sp,-4\n";
+        codeSegment += "\t\tlw $ra,0($sp)\n";
+        codeSegment += "\t\tjr $ra\n";
+
+        symbolTable.leaveCurrentScope();
+    }
+    /*..........*/
+    private void visitClassDeclarationNode(Node node) throws Exception {
+        //TODO
+        IdentifierNode idNode = (IdentifierNode) node.getChild(0);
+        String className = idNode.getValue();
+        //ClassDecaf.currentClass = findClass(className);
+        symbolTable.enterScope(className);
+        visitAllChildren(node);
+        symbolTable.leaveCurrentScope();
+    }
+    /*..........*/
+    private void visitVariableDeclaration(Node node) throws Exception {
+
+
+        IdentifierNode idNode = (IdentifierNode) node.getChild(1);
+        String varName = idNode.getValue();
+        String label = symbolTable.getCurrentScopeName() + "_" + varName + " :";
+
+
+
+    }
+    /*..........*/
+
 }

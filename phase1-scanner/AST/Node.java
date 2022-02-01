@@ -1,8 +1,6 @@
 package AST;
 
-//import codegen.SymbolInfo;
-//import codegen.SimpleVisitor;
-
+import cgen.SymbolInfo;
 import java.util.List;
 
 public interface Node {
@@ -10,13 +8,11 @@ public interface Node {
     NodeType getNodeType();
 
     //Sets the symbol info.
-    //void setSymbolInfo(SymbolInfo si);
+    void setSymbolInfo(SymbolInfo si);
 
     //Gets the symbol info.
-    //SymbolInfo getSymbolInfo();
+    SymbolInfo getSymbolInfo();
 
-    //Accepts a simple visitor.
-    //void accept(SimpleVisitor visitor) throws Exception;
 
     //Adds a node to the end of the list of children.
     void addChild(Node node);

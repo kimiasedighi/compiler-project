@@ -1,10 +1,7 @@
 package AST;
 
-//import codegen.SimpleVisitor;
-//import codegen.SymbolInfo;
-
+import cgen.SymbolInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,7 +9,7 @@ public class BaseNode implements Node {
     private List<Node> children = new ArrayList<>();
     private Node parent;
     private NodeType nodeType;
-    //SymbolInfo symbolInfo;
+    SymbolInfo symbolInfo;
 
     public BaseNode(NodeType nodeType) {
         this.nodeType = nodeType;
@@ -22,29 +19,22 @@ public class BaseNode implements Node {
         return nodeType;
     }
 
-    //public void setSymbolInfo(SymbolInfo si) {
-    //    this.symbolInfo = si;
-    //}
+    public void setSymbolInfo(SymbolInfo symbolInfo) {
+        this.symbolInfo = symbolInfo;
+    }
 
-    //public SymbolInfo getSymbolInfo() {
-    //    return symbolInfo;
-    //}
+    public SymbolInfo getSymbolInfo() {
+        return symbolInfo;
+    }
 
     @Override
     public String toString() {
         String str = nodeType.toString();
-
-        //if (symbolInfo != null) {
-        //    str += " (" + symbolInfo.toString() + ")";
-        //}
-
+        if (symbolInfo != null) {
+            str += " (" + symbolInfo.toString() + ")";
+        }
         return str;
     }
-
-    //@Override
-    //public void accept(SimpleVisitor visitor) throws Exception {
-    //    visitor.visit(this);
-    //}
 
     @Override
     public void addChild(Node node) {
