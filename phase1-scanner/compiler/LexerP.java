@@ -13,14 +13,14 @@ import java.io.IOException;
 public class LexerP implements java_cup.runtime.Scanner {
 
   /** This character denotes the end of file. */
-  public  final int YYEOF = -1;
+  public static final int YYEOF = -1;
 
   /** Initial size of the lookahead buffer. */
-  private  final int ZZ_BUFFERSIZE = 16384;
+  private static final int ZZ_BUFFERSIZE = 16384;
 
   // Lexical states.
-  public  final int YYINITIAL = 0;
-  public  final int STRING = 2;
+  public static final int YYINITIAL = 0;
+  public static final int STRING = 2;
 
   /**
    * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
@@ -28,27 +28,27 @@ public class LexerP implements java_cup.runtime.Scanner {
    *                  at the beginning of a line
    * l is of the form l = 2*k, k a non negative integer
    */
-  private  final int ZZ_LEXSTATE[] = {
+  private static final int ZZ_LEXSTATE[] = {
      0,  0,  1, 1
   };
 
   /**
    * Top-level table for translating characters to character classes
    */
-  private  final int [] ZZ_CMAP_TOP = zzUnpackcmap_top();
+  private static final int [] ZZ_CMAP_TOP = zzUnpackcmap_top();
 
-  private  final String ZZ_CMAP_TOP_PACKED_0 =
+  private static final String ZZ_CMAP_TOP_PACKED_0 =
     "\1\0\25\u0100\1\u0200\11\u0100\1\u0300\17\u0100\1\u0400\247\u0100"+
     "\10\u0500\u1020\u0100";
 
-  private  int [] zzUnpackcmap_top() {
+  private static int [] zzUnpackcmap_top() {
     int [] result = new int[4352];
     int offset = 0;
     offset = zzUnpackcmap_top(ZZ_CMAP_TOP_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackcmap_top(String packed, int offset, int [] result) {
+  private static int zzUnpackcmap_top(String packed, int offset, int [] result) {
     int i = 0;       /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -64,9 +64,9 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * Second-level tables for translating characters to character classes
    */
-  private  final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
+  private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
-  private  final String ZZ_CMAP_BLOCKS_PACKED_0 =
+  private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
     "\11\0\1\1\1\2\2\3\1\4\22\0\1\5\1\6"+
     "\1\7\2\0\1\10\1\11\1\0\1\12\1\13\1\14"+
     "\1\15\1\16\1\17\1\20\1\21\1\22\11\23\1\0"+
@@ -81,14 +81,14 @@ public class LexerP implements java_cup.runtime.Scanner {
     "\13\1\35\0\2\3\5\0\1\1\57\0\1\1\240\0"+
     "\1\1\377\0\u0100\77";
 
-  private  int [] zzUnpackcmap_blocks() {
+  private static int [] zzUnpackcmap_blocks() {
     int [] result = new int[1536];
     int offset = 0;
     offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackcmap_blocks(String packed, int offset, int [] result) {
+  private static int zzUnpackcmap_blocks(String packed, int offset, int [] result) {
     int i = 0;       /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -103,9 +103,9 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * Translates DFA states to action switch labels.
    */
-  private  final int [] ZZ_ACTION = zzUnpackAction();
+  private static final int [] ZZ_ACTION = zzUnpackAction();
 
-  private  final String ZZ_ACTION_PACKED_0 =
+  private static final String ZZ_ACTION_PACKED_0 =
     "\2\0\1\1\1\2\1\3\1\4\1\5\1\1\1\6"+
     "\1\7\1\10\1\11\1\12\1\13\1\14\1\15\2\16"+
     "\1\17\1\20\1\21\1\22\4\23\1\24\1\25\1\1"+
@@ -122,14 +122,14 @@ public class LexerP implements java_cup.runtime.Scanner {
     "\1\76\1\77\1\23\1\100\1\101\1\102\1\103\2\23"+
     "\1\104";
 
-  private  int [] zzUnpackAction() {
+  private static int [] zzUnpackAction() {
     int [] result = new int[197];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackAction(String packed, int offset, int [] result) {
+  private static int zzUnpackAction(String packed, int offset, int [] result) {
     int i = 0;       /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -145,9 +145,9 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * Translates a state to a row index in the transition table
    */
-  private  final int [] ZZ_ROWMAP = zzUnpackRowMap();
+  private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
-  private  final String ZZ_ROWMAP_PACKED_0 =
+  private static final String ZZ_ROWMAP_PACKED_0 =
     "\0\0\0\100\0\200\0\200\0\300\0\200\0\200\0\u0100"+
     "\0\200\0\200\0\u0140\0\u0180\0\200\0\u01c0\0\200\0\u0200"+
     "\0\u0240\0\u0280\0\200\0\u02c0\0\u0300\0\u0340\0\u0380\0\u03c0"+
@@ -174,14 +174,14 @@ public class LexerP implements java_cup.runtime.Scanner {
     "\0\u2140\0\u2180\0\u21c0\0\u0380\0\u0380\0\u2200\0\u0380\0\200"+
     "\0\200\0\u0380\0\u2240\0\u2280\0\u0380";
 
-  private  int [] zzUnpackRowMap() {
+  private static int [] zzUnpackRowMap() {
     int [] result = new int[197];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackRowMap(String packed, int offset, int [] result) {
+  private static int zzUnpackRowMap(String packed, int offset, int [] result) {
     int i = 0;  /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -195,9 +195,9 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * The transition table of the DFA
    */
-  private  final int [] ZZ_TRANS = zzUnpackTrans();
+  private static final int [] ZZ_TRANS = zzUnpackTrans();
 
-  private  final String ZZ_TRANS_PACKED_0 =
+  private static final String ZZ_TRANS_PACKED_0 =
     "\1\3\5\4\1\5\1\6\1\7\1\10\1\11\1\12"+
     "\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22"+
     "\1\23\1\24\1\25\1\26\6\27\1\30\1\31\1\32"+
@@ -324,14 +324,14 @@ public class LexerP implements java_cup.runtime.Scanner {
     "\12\27\3\0\5\27\1\304\21\27\26\0\2\27\4\0"+
     "\12\27\3\0\20\27\1\305\6\27\4\0";
 
-  private  int [] zzUnpackTrans() {
+  private static int [] zzUnpackTrans() {
     int [] result = new int[8896];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackTrans(String packed, int offset, int [] result) {
+  private static int zzUnpackTrans(String packed, int offset, int [] result) {
     int i = 0;       /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -346,17 +346,17 @@ public class LexerP implements java_cup.runtime.Scanner {
 
 
   /** Error code for "Unknown internal scanner error". */
-  private  final int ZZ_UNKNOWN_ERROR = 0;
+  private static final int ZZ_UNKNOWN_ERROR = 0;
   /** Error code for "could not match input". */
-  private  final int ZZ_NO_MATCH = 1;
+  private static final int ZZ_NO_MATCH = 1;
   /** Error code for "pushback value was too large". */
-  private  final int ZZ_PUSHBACK_2BIG = 2;
+  private static final int ZZ_PUSHBACK_2BIG = 2;
 
   /**
    * Error messages for {@link #ZZ_UNKNOWN_ERROR}, {@link #ZZ_NO_MATCH}, and
    * {@link #ZZ_PUSHBACK_2BIG} respectively.
    */
-  private  final String ZZ_ERROR_MSG[] = {
+  private static final String ZZ_ERROR_MSG[] = {
     "Unknown internal scanner error",
     "Error: could not match input",
     "Error: pushback value was too large"
@@ -365,9 +365,9 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * ZZ_ATTRIBUTE[aState] contains the attributes of state {@code aState}
    */
-  private  final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
+  private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
-  private  final String ZZ_ATTRIBUTE_PACKED_0 =
+  private static final String ZZ_ATTRIBUTE_PACKED_0 =
     "\2\0\2\11\1\1\2\11\1\1\2\11\2\1\1\11"+
     "\1\1\1\11\3\1\1\11\7\1\2\11\16\1\1\11"+
     "\1\1\4\11\1\1\5\11\1\0\1\1\1\11\1\1"+
@@ -376,14 +376,14 @@ public class LexerP implements java_cup.runtime.Scanner {
     "\30\1\2\0\15\1\2\0\12\1\2\0\5\1\2\11"+
     "\4\1";
 
-  private  int [] zzUnpackAttribute() {
+  private static int [] zzUnpackAttribute() {
     int [] result = new int[197];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
   }
 
-  private  int zzUnpackAttribute(String packed, int offset, int [] result) {
+  private static int zzUnpackAttribute(String packed, int offset, int [] result) {
     int i = 0;       /* index in packed string  */
     int j = offset;  /* index in unpacked array */
     int l = packed.length();
@@ -426,7 +426,7 @@ public class LexerP implements java_cup.runtime.Scanner {
    * Whether the scanner is at the end of file.
    * @see #yyatEOF
    */
-  public boolean zzAtEOF;
+  private boolean zzAtEOF;
 
   /**
    * The number of occupied positions in {@link #zzBuffer} beyond {@link #zzEndRead}.
@@ -477,7 +477,7 @@ public class LexerP implements java_cup.runtime.Scanner {
   /**
    * Translates raw input code points to DFA table row
    */
-  private  int zzCMap(int input) {
+  private static int zzCMap(int input) {
     int offset = input & 255;
     return offset == input ? ZZ_CMAP_BLOCKS[offset] : ZZ_CMAP_BLOCKS[ZZ_CMAP_TOP[input >> 8] | offset];
   }
@@ -680,7 +680,7 @@ public class LexerP implements java_cup.runtime.Scanner {
    *
    * @param errorCode the code of the error message to display.
    */
-  private  void zzScanError(int errorCode) {
+  private static void zzScanError(int errorCode) {
     String message;
     try {
       message = ZZ_ERROR_MSG[errorCode];
@@ -943,8 +943,11 @@ public class LexerP implements java_cup.runtime.Scanner {
           case 93: break;
           case 26:
             { yybegin(YYINITIAL);
+        String temp=string.toString()+yytext();
+        temp= temp.substring(1,temp.length()-1);
+
         string.delete(0,string.length());
-        return tokenize(sym.STRINGCONST, string.toString() + yytext());
+        return tokenize(sym.STRINGCONST, temp);
             }
             // fall through
           case 94: break;
@@ -1174,7 +1177,7 @@ public class LexerP implements java_cup.runtime.Scanner {
    * @param argv   the command line, contains the filenames to run
    *               the scanner on.
    */
-  public  void main(String[] argv) {
+  public static void main(String[] argv) {
     if (argv.length == 0) {
       System.out.println("Usage : java LexerP [ --encoding <name> ] <inputfile(s)>");
     }

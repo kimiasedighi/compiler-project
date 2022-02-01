@@ -141,8 +141,11 @@ Definition="define"
 <STRING> {
     "\""    {
         yybegin(YYINITIAL);
+        String temp=string.toString()+yytext();
+        temp= temp.substring(1,temp.length()-1);
+
         string.delete(0,string.length());
-        return tokenize(sym.STRINGCONST, string.toString() + yytext());
+        return tokenize(sym.STRINGCONST, temp);
     }
    "\\\""                {string.append(yytext());}
    .                     {string.append(yytext());}

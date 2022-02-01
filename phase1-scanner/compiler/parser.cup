@@ -10,7 +10,7 @@ parser code {:
      //protected void report_expected_token_ids(){ }
      protected ProgramNode root;
 
-     void setRoot(ProgramNode p) { this.root = p; }
+     void setRoot(ProgramNode p)  { this.root = p; }
 
      public ProgramNode getRoot() { return this.root; }
 :}
@@ -133,6 +133,7 @@ Program  ::= DeclPlus:dp
             RESULT.addChild(dp);
             setRoot((ProgramNode)RESULT);
             dp.setParent(RESULT);
+
             :}
            | MacroPlus:mp DeclPlus:dp // TODO
             {:
