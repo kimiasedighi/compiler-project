@@ -1,3 +1,3 @@
-package CodeGen;
+package cgen;
 
 public interface Symbol { }

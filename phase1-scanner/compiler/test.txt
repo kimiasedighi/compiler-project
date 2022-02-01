@@ -1,4 +1,4 @@
 void main(){
-    string a;
-    a = "h";
+    boolean a;
+    a = true;
 }
