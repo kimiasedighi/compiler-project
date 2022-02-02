@@ -224,11 +224,34 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
 			f.setParent(RESULT);
 			s.setParent(RESULT);
         :}
+        | Type:t IDENTIFIER:i LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
+         {:
+            RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+            Node id = new IdentifierNode((String)i);
+            Node f = new BaseNode(NodeType.ARGUMENTS);
+            RESULT.addChild(t, id, f, s);
+            t.setParent(RESULT);
+            id.setParent(RESULT);
+            f.setParent(RESULT);
+            s.setParent(RESULT);
+        :}
         | IDENTIFIER:i1 IDENTIFIER:i2 LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s // TODO
         {:
 			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
 			Node id1 = new IdentifierNode((String)i1);
 			Node id2 = new IdentifierNode((String)i2);
+			RESULT.addChild(id1, id2, f, s);
+			id1.setParent(RESULT);
+			id2.setParent(RESULT);
+			f.setParent(RESULT);
+			s.setParent(RESULT);
+       :}
+        | IDENTIFIER:i1 IDENTIFIER:i2 LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
+        {:
+			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+			Node id1 = new IdentifierNode((String)i1);
+			Node id2 = new IdentifierNode((String)i2);
+			Node f = new BaseNode(NodeType.ARGUMENTS);
 			RESULT.addChild(id1, id2, f, s);
 			id1.setParent(RESULT);
 			id2.setParent(RESULT);
@@ -245,23 +268,54 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
             id.setParent(RESULT);
             f.setParent(RESULT);
             s.setParent(RESULT);
+        :}
+        | VOID IDENTIFIER:i LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
+         {:
+            RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
+            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
+            Node id = new IdentifierNode((String)i);
+            Node f = new BaseNode(NodeType.ARGUMENTS);
+            RESULT.addChild(t, id, f, s);
+            t.setParent(RESULT);
+            id.setParent(RESULT);
+            f.setParent(RESULT);
+            s.setParent(RESULT);
         :};
 
-Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
-        |{: RESULT=new BaseNode(NodeType.EMPTY_NODE); :};
+//Formals ::=  VariablePlusComma:vpc {: RESULT=vpc; :}
+//        |{: RESULT=new BaseNode(NodeType.EMPTY_NODE); :};
+//
+//VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v //TODO
+//                    {:
+//                    RESULT = vpc;
+//                    RESULT.addChild(v);
+//                    v.setParent(RESULT);
+//                    :}
+//                    | Variable:v
+//                    {:
+//                    RESULT = new BaseNode(NodeType.VARIABLE_PLUS_COMMA);
+//                    RESULT.addChild(v);
+//                    v.setParent(RESULT);
+//                    :};
 
-VariablePlusComma ::= VariablePlusComma:vpc COMMA Variable:v //TODO
-                    {:
-                    RESULT = vpc;
-                    RESULT.addChild(v);
-                    v.setParent(RESULT);
-                    :}
-                    | Variable:v
-                    {:
-                    RESULT = new BaseNode(NodeType.VARIABLE_PLUS_COMMA);
-                    RESULT.addChild(v);
-                    v.setParent(RESULT);
-                    :};
+Formals ::=  Variable:v COMMA Formals:f
+            {:
+                RESULT = f;
+                Node a = new BaseNode(NodeType.ARGUMENT);
+                RESULT.addChild(a);
+                a.setParent(RESULT);
+                a.addChild(v);
+                v.setParent(a);
+            :}
+           | Variable:v
+            {:
+                RESULT = new BaseNode(NodeType.ARGUMENTS);
+                Node a = new BaseNode(NodeType.ARGUMENT);
+                RESULT.addChild(a);
+                a.setParent(RESULT);
+                a.addChild(v);
+                v.setParent(a);
+            :};
 
 ClassDecl ::= CLASS IDENTIFIER:i LEFTCURLY FieldPlus:fp  RIGHTCURLY
             {:
@@ -433,12 +487,11 @@ IfStatement ::= IF LEFTPARANTHESIS Expression:e RIGHTPARANTHESIS Statement:s Els
                 e.setParent(RESULT);
                 s.setParent(RESULT);
                 ep.setParent(RESULT);
-            :}
-;
+            :};
 
 ElsePrime ::= ELSE Statement:s
             {:
-                RESULT = new BaseNode(NodeType.IF_STATEMENT);
+                RESULT = new BaseNode(NodeType.ELSE_STATEMENT);
                 RESULT.addChild(s);
                 s.setParent(RESULT);
             :}

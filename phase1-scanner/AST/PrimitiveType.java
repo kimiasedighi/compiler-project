@@ -1,8 +1,5 @@
 package AST;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public enum PrimitiveType implements Type {
 
     INT(".word", 4),

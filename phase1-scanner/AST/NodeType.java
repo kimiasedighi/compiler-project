@@ -34,6 +34,7 @@ public enum NodeType {
 
     STATEMENT,
     IF_STATEMENT,
+    ELSE_STATEMENT,
     WHILE_STATEMENT,
     FOR_STATEMENT,
     EMPTY_STATEMENT,
@@ -93,4 +94,7 @@ public enum NodeType {
     NULL_LITERAL,
 
     EMPTY_NODE,
+
+    ARGUMENT,
+    ARGUMENTS,
 }

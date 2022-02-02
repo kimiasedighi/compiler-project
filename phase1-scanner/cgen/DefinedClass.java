@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DefinedClass {
-    String name;
 
+    String name;
     List<Function> methods = new ArrayList<>();
     List<Field> fields = new ArrayList<>();
     int objectSize = 0;
-    String parentClassName = "";
-    public static ClassDecaf currentClass;
+    public static DefinedClass currentClass;
 
-    public ClassDecaf(String name) {
+    public DefinedClass(String name) {
         this.name = name;
     }
 
@@ -24,12 +23,12 @@ public class DefinedClass {
         this.name = name;
     }
 
-    public ClassDecaf getParentClass() {
-        return parentClass;
+    public List<Function> getMethods() {
+        return methods;
     }
 
-    public void setParentClass(ClassDecaf parentClass) {
-        this.parentClass = parentClass;
+    public void setMethods(List<Function> methods) {
+        this.methods = methods;
     }
 
     public List<Field> getFields() {
@@ -53,7 +52,7 @@ public class DefinedClass {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassDecaf that = (ClassDecaf) o;
+        DefinedClass that = (DefinedClass) o;
 
         return name != null ? name.equals(that.name) : that.name == null;
     }
@@ -63,29 +62,12 @@ public class DefinedClass {
         return name != null ? name.hashCode() : 0;
     }
 
-    public List<Function> getMethods() {
-        return methods;
-    }
-
-    public void setMethods(List<Function> methods) {
-        this.methods = methods;
-    }
-
-    public String getParentClassName() {
-        return parentClassName;
-    }
-
-    public void setParentClassName(String parentClassName) {
-        this.parentClassName = parentClassName;
-    }
-
     @Override
     public String toString() {
         return "ClassDecaf{" +
                 "name='" + name + '\'' +
                 ", methods=" + methods +
-                ", fields=" + fields +
-                ", parentClassName='" + parentClassName + '\'' +
+                ", fields=" + fields + '\'' +
                 '}';
     }
 }
