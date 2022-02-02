@@ -45,7 +45,7 @@ public class SymbolTable implements Symbol {
         currentScope.getVariables().put(id, s);
     }
 
-    public Symbol getIdSymbol(String id) throws Exception {
+    public Symbol get(String id) throws Exception {
         for (int i = scopes.size() - 1; i >= 0; i--) {
             if (scopes.get(i).getVariables().containsKey(id))
                 return scopes.get(i).getVariables().get(id);

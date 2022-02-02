@@ -539,8 +539,10 @@ ForStatement ::= FOR LEFTPARANTHESIS SEMICOLON Expression:e2 SEMICOLON RIGHTPARA
             :};
 
 ReturnStatement ::= RETURN SEMICOLON
+
                 {:
                     RESULT = new BaseNode(NodeType.RETURN_STATEMENT);
+                    RESULT.addChild(new BaseNode(NodeType.EMPTY_NODE));
                 :}
                   | RETURN Expression:e SEMICOLON
                 {:
