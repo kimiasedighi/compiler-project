@@ -1,4 +1,3 @@
 void main(){
-    string a;
-    a = "hi";
+    int a;
 }

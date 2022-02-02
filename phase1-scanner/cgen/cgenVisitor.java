@@ -2,10 +2,7 @@ package cgen;
 
 import AST.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class cgenVisitor implements Visitor {
 
@@ -38,6 +35,12 @@ public class cgenVisitor implements Visitor {
             "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23", "$f24", "$f25",
             "$f26", "$f27", "$f28", "$f29", "$f30", "$f31"
     );
+
+    private int tempLabelCounter = 0;
+    private int arrayNumbers = 0;
+
+    private HashMap<String, String> stringLiterals = new HashMap<>();
+    private int tempLiteralCounter = 0;
 
     @Override
     public void visit(Node node) throws Exception{
@@ -150,16 +153,16 @@ public class cgenVisitor implements Visitor {
                 visitAssignNode(node);
                 break;
             case ASSIGN_ADD:
-                //visitAssignAddNode(node); //todo
+                //visitAssignAddNode(node); //todo write
                 break;
             case ASSIGN_SUB:
-                //visitAssignSubNode(node); //todo
+                //visitAssignSubNode(node); //todo write
                 break;
             case ASSIGN_MUL:
-                //visitAssignMullNode(node); //todo
+                //visitAssignMullNode(node); //todo write
                 break;
             case ASSIGN_DIV:
-                //visitAssignDivNode(node); //todo
+                //visitAssignDivNode(node); //todo write
                 break;
             case THIS:
                 break;
@@ -221,22 +224,22 @@ public class cgenVisitor implements Visitor {
                 visitNewArrayNode(node);
                 break;
             case ITOD:
-                visitItoDNode(node);
+                //visitItoDNode(node); //todo add
                 break;
             case DTOI:
-                visitDtoINode(node);
+                //visitDtoINode(node); //todo add
                 break;
             case ITOB:
-                visitItoBNode(node);
+                //visitItoBNode(node); //todo add
                 break;
             case BTOI:
-                visitBtoINode(node);
+                //visitBtoINode(node); //todo add
                 break;
             case LINE:
-                visitLineNode(node);
+                //visitLineNode(node); //todo write
                 break;
             case FUNCTION:
-                visitFunctionNode(node);
+                //visitFunctionNode(node); //todo write
                 break;
             case LVALUE:
                 visitLValueNode(node);
@@ -788,6 +791,313 @@ public class cgenVisitor implements Visitor {
             codeSegment += "\t\tneg.s $f0, $f0\n";
         }
     }
+    /*..........*/
+    private void visitLessThanNode(Node node) throws Exception {
+        LogicalOp1(node, "lt");
+    }
+    /*..........*/
+    private void visitLessEqualNode(Node node) throws Exception {
+        LogicalOp1(node, "le");
+    }
+    /*..........*/
+    private void visitGreaterThanNode(Node node) throws Exception {
+        LogicalOp1(node, "gt");
+    }
+    /*..........*/
+    private void visitGreaterEqualNode(Node node) throws Exception {
+        LogicalOp1(node, "ge");
+    }
+    /*..........*/
+    private void visitEqualNode(Node node) throws Exception {
+        LogicalOp1(node, "eq");
+    }
+    /*..........*/
+    private void visitNotEqualNode(Node node) throws Exception {
+        LogicalOp1(node, "ne");
+    }
+    /*..........*/
+    private void LogicalOp1(Node node, String type) throws Exception {
+        // for ==, >,...
+        setParentSymbolInfo(node, node.getChild(0));
+        SymbolInfo first = node.getSymbolInfo();
+        int firstType = first.getType().getAlign();
+
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 4 || node.getChild(0).getSymbolInfo().getType().getAlign() == 8) && (!(type.equals("ne") || type.equals("eq")))) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+
+        int tempReg = firstType != 8 ? tempRegsNumber : tempfRegsNumber;
+        List<String> reg = firstType != 8 ? regs : fregs;
+
+        String op = firstType != 8 ? "s" + type + " " : "c." + type + ".s ";
+        String op2 = firstType != 8 ? "move " : "mov.s ";
+        String op3 = firstType != 8 ? "sw " : "swc1 ";
+        String op4 = firstType != 8 ? "lw " : "lwc1 ";
+
+        codeSegment += "\t\t" + op2 + reg.get(tempReg + 1) + ", " + reg.get(tempReg) + "\n";
+        codeSegment += "\t\t" + op3 + reg.get(tempReg + 1) + ", 0($sp)\n";
+        codeSegment += "\t\taddi $sp, $sp, 4\n";
+
+        setParentSymbolInfo(node, node.getChild(1));
+        SymbolInfo second = node.getSymbolInfo();
+        String secondType = second.getType().getSignature();
+
+        codeSegment += "\t\taddi $sp, $sp, -4\n";
+        codeSegment += "\t\t" + op4 + reg.get(tempReg + 1) + " 0($sp)\n";
+
+        if (isTypesEqual(node.getChild(0).getSymbolInfo(), node.getChild(1).getSymbolInfo())) {
+            if (node.getChild(0).getSymbolInfo().getType().getAlign() == 8) {
+                switch (op) {
+                    case "c.gt.s ":
+                        codeSegment += "\t\t" + "c.lt.s " + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
+                        break;
+                    case "c.ge.s ":
+                        codeSegment += "\t\t" + "c.le.s " + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
+                        break;
+                    case "c.ne.s ":
+                        codeSegment += "\t\t" + "c.eq.s " + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
+                        break;
+                    default:
+                        codeSegment += "\t\t" + op + reg.get(tempReg + 1) + ", " + reg.get(tempReg) + "\n";
+                }
+
+                codeSegment += "\t\tbc1f L_CondFalse" + tempLabelCounter + "\n";
+                if (!op.equals("c.ne.s ")) {
+                    codeSegment += "\t\tli $t0 1\n";
+                } else {
+                    codeSegment += "\t\tli $t0 0\n";
+                }
+                codeSegment += "\t\tj L_CondEnd" + tempLabelCounter + "\n";
+                if (!op.equals("c.ne.s ")) {
+                    codeSegment += "\t\tL_CondFalse" + tempLabelCounter + " : li $t0 0\n";
+                } else {
+                    codeSegment += "\t\tL_CondFalse" + tempLabelCounter + ": li $t0 1\n";
+                }
+                codeSegment += "\t\tL_CondEnd" + tempLabelCounter++ + ":\n";
+            } else {
+                codeSegment += "\t\t" + op + reg.get(tempReg + 1) + ", " + reg.get(tempReg + 1) + ", " + reg.get(tempReg) + "\n";
+            }
+            node.getSymbolInfo().setType(PrimitiveType.BOOL);
+        } else {
+            throw new Exception("Type " + firstType + " & " + secondType + " are mismatched");
+        }
+        codeSegment += "\t\t" + op2 + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
+    }
+    /*..........*/
+    private void visitAndNode(Node node) throws Exception {
+        LogicalOp2(node, "and");
+    }
+    /*..........*/
+    private void visitOrNode(Node node) throws Exception {
+        LogicalOp2(node, "and");
+    }
+    /*..........*/
+    private void LogicalOp2(Node node, String op) throws Exception {
+        // for and & or
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 1)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+
+        codeSegment += "\t\t" + "move $t1" + ", " + "$t0" + "\n";
+        codeSegment += "\t\t" + "sw " + "$t1" + ", 0($sp)\n";
+        codeSegment += "\t\taddi $sp, $sp, 4\n";
+
+        setParentSymbolInfo(node, node.getChild(1));
+
+        codeSegment += "\t\taddi $sp, $sp, -4\n";
+        codeSegment += "\t\t" + "lw " + "$t1" + ", 0($sp)\n";
+
+        if (isTypesEqual(node.getChild(0).getSymbolInfo(), node.getChild(1).getSymbolInfo())) {
+            codeSegment += "\t\t" + op + " $t1, $t1, $t0\n";
+        }
+
+        codeSegment += "\t\t" + "move $t0, $t1\n";
+    }
+    /*..........*/
+    private void visitNotNode(Node node) throws Exception {
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 1)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+        codeSegment += "\t\t" + "xori $t0, $t0, 1\n";
+    }
+    /*..........*/
+    private void visitReadIntegerNode(Node node) {
+        SymbolInfo si = new SymbolInfo(node, PrimitiveType.INT);
+        node.setSymbolInfo(si);
+        codeSegment += "\t\tli $v0, 5\n\t\tsyscall\n";
+        codeSegment += "\t\tmove $t0, $v0\n\n";
+    }
+    /*..........*/
+    private void visitReadLineNode(Node node) {
+        String label = "userInput_" + labelGenerator();
+        dataSegment += "\t" + label + ":\t.space\t600\n";
+        SymbolInfo si = new SymbolInfo(node, PrimitiveType.INPUTSTRING);
+        node.setSymbolInfo(si);
+        codeSegment += "\t\tli $v0, 8\n\t\tla $a0, " + label + "\n\t\tli $a1, 600\n\t\tsyscall\n";
+        codeSegment += "\t\tmove $t0, $a0\n\n";
+    }
+    /*..........*/
+    private void visitNewArrayNode(Node node) throws Exception {
+
+        int literalNumber = ((IntegerLiteralNode) node.getChild(0).getChild(0)).getValue();
+
+        setParentSymbolInfo(node, node.getChild(1));
+        node.getSymbolInfo().setDimensionArray(node.getSymbolInfo().getDimensionArray() + 1);
+        if (literalNumber <= 0)
+            throw new Exception("array size must be greater than zero");
+        String label = symbolTable.getCurrentScopeName() + "_NEW_ARRAY_" + arrayNumbers;
+        arrayNumbers++;
+        dataSegment += "\t" + label + ": .space " + (literalNumber + 1) * 4 + "\n";
+        codeSegment += "\t\tla $t0, " + label + "\n";
+        codeSegment += "\t\tli $t2, " + literalNumber + "\n";
+        codeSegment += "\t\tsw $t2, 0($t0)\n";
+    }
+    /*..........*/
+
+    /*..........*/
+
+    /*..........*/
+    private void visitLValueNode(Node node) throws Exception {
+        visit(node.getChild(0));
+        if (node.getChildren().size() == 1) { //id
+            IdentifierNode idNode = (IdentifierNode) node.getChild(0);
+            String varName = idNode.getValue();
+            SymbolInfo varType = (SymbolInfo) symbolTable.get(varName);
+            SymbolInfo si = new SymbolInfo(node, varType.getType());
+            si.setDimensionArray(varType.getDimensionArray());
+            node.setSymbolInfo(si);
+            switch (varType.getType().getAlign()) {
+                case 1: //bool
+                case 4: // int
+                case 6: //String
+                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n';
+                    codeSegment += "\t\tlw $t0, 0($a0)\n";
+                    break;
+                case 8: // float
+                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n';
+                    codeSegment += "\t\tl.s $f0, 0($a0)\n";
+                    break;
+                //todo
+                default:
+                    break;
+            }
+        } else {
+            if (node.getChild(1).getNodeType().equals(NodeType.IDENTIFIER)) {
+                //TODO
+            } else {
+                visit(node.getChild(0));
+                codeSegment += "\t\tmove $a3, $t0\n";
+                codeSegment += "\t\tmove $s4, $a0\n";
+                SymbolInfo varType = node.getChild(0).getSymbolInfo();
+                visit(node.getChild(1));
+                SymbolInfo varType2 = node.getChild(1).getSymbolInfo();
+                if (varType2.getType().getAlign() == 4) {//int
+                    if (varType.getDimensionArray() > 0) {
+                        codeSegment += "\t\tli $t4, 4\n";
+                        codeSegment += "\t\taddi $t0, $t0, 1\n";
+                        codeSegment += "\t\tlw $t2, 0($a3)\n";
+                        codeSegment += "\t\tblt $t2, $t0, runtime_error\n";
+                        codeSegment += "\t\tmul $t0, $t0, $t4\n";
+                        codeSegment += "\t\tadd $a0, $a3, $t0\n";
+                        codeSegment += "\t\tlw $t0, 0($a0)\n";
+                    } else
+                        throw new Exception("error in array assign - type is not array");
+                } else
+                    throw new Exception("error in array assign - index array");
+
+                SymbolInfo si = new SymbolInfo(node, varType.getType());
+                si.setDimensionArray(varType.getDimensionArray() - 1);
+                node.setSymbolInfo(si);
+            }
+        }
+
+    }
+    /*..........*/
+    private void visitCallNode(Node node) throws Exception {
+        String varName;
+        Function method = null;
+        int argNumber = 0;
+        for (Node child : node.getChildren()) {
+            if (child.getNodeType().equals(NodeType.IDENTIFIER)) {
+                IdentifierNode idNode = (IdentifierNode) child;
+                varName = idNode.getValue();
+                method = findFunction(varName);
+                if (method == null)
+                    throw new Exception(varName + " function doesn't exist");
+            }
+            if (child.getNodeType().equals(NodeType.ACTUALS)) {
+
+                for (Node childChild : child.getChild(0).getChildren()) {
+                    visit(childChild);
+                    SymbolInfo si = childChild.getSymbolInfo();
+                    if (!isTypesEqual(si, method.getArgumentsType().get(argNumber)))
+                        throw new Exception("types doesn't match");
+
+                    argNumber++;
+                    switch (si.getType().getAlign()) {
+                        case 1: //bool
+                        case 4: // int
+                        case 6: //String
+                        case 10:
+                            //TODO
+                            codeSegment += "\t\tsw $t0, 0($sp)\n";
+                            codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
+                            break;
+                        case 8: // float
+                            codeSegment += "\t\tsw $t0, 0($sp)\n";
+                            codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+            }
+        }
+        if (argNumber != method.getArgumentsType().size())
+            throw new Exception("expected " + method.getArgumentsType().size() + " args but " + argNumber + " passed");
+        codeSegment += "\t\tjal " + method.getScope().getName() + "_" + method.getName() + "\n";
+        codeSegment += "\t\taddi $sp, $sp, " + (argNumber) * (-4) + "\n";
+
+        node.setSymbolInfo(method.getReturnType());
+    }
+    /*..........*/
+    private void visitLiteralNode(Node node) {
+        Literal literalNode = (Literal) node;
+        node.setSymbolInfo(new SymbolInfo(node, literalNode.getType()));
+        switch (literalNode.getType().getAlign()) {
+            case 6: //string
+                String str = ((StringLiteralNode) literalNode).getValue();
+                System.out.println(str);
+                str = str.replace("\\t","\\\\t");
+                str = str.replace("\\n","\\\\n");
+                String str_raw = str.substring(1, str.length() - 1);
+                String label = "";
+                if (!stringLiterals.keySet().contains(str_raw)) {
+                    label = "StringLiteral_" + stringLiterals.keySet().size() + 1;
+                    stringLiterals.put(str_raw, label);
+                    dataSegment += "\t" + label + ": .asciiz " + str + "\n";
+                } else
+                    label = stringLiterals.get(str_raw);
+                codeSegment += "\t\tla $t0, " + label + "\n";
+                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.STRING));
+                break;
+            case 1: //bool
+                String bool_type = node.toString().equals("true") ? "1" : "0";
+                codeSegment += "\t\tli " + regs.get(tempRegsNumber) + ", " + bool_type + "\n";
+                break;
+            case 4: //int
+                codeSegment += "\t\tli " + regs.get(tempRegsNumber) + ", " + node + "\n";
+                break;
+            case 8: //double
+                dataSegment += "\t" + symbolTable.getCurrentScopeName() + "_temp" + tempLiteralCounter + ": .float " + node + "\n";
+                codeSegment += "\t\tla $a0, " + symbolTable.getCurrentScopeName() + "_temp" + (tempLiteralCounter++) + '\n';
+                codeSegment += "\t\tl.s $f0, 0($a0)\n";
+                break;
+        }
+    }
     /*..helping functions..*/
     private DefinedClass findClass(String name) {
         for (DefinedClass c : classes) {
@@ -823,6 +1133,21 @@ public class cgenVisitor implements Visitor {
         return false;
     }
 
-    /*..........*/
+    private Function findFunction(String varName) {
+        Function method = null;
+        for (Function function : functions) {
+            if (function.getName().equals(varName)) {
+                for (Scope scope : symbolTable.getScopes()) {
+                    if (scope.equals(function.getScope())) {
+                        method = function;
+                        break;
+                    }
+                }
+                if (method != null)
+                    break;
+            }
+        }
+        return method;
+    }
 
 }

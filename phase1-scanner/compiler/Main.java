@@ -1,6 +1,7 @@
 package compiler;
 
 import AST.ProgramNode;
+import cgen.cgenVisitor;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -59,7 +60,8 @@ public class Main {
             try {
                 p.parse();
                 ProgramNode root = p.getRoot();
-
+                cgenVisitor cgenVisitor = new cgenVisitor();
+                cgenVisitor.visit(root);
                 return true;
             }catch (Exception ex){
                 System.out.println(ex.toString());

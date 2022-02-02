@@ -2102,6 +2102,7 @@ class CUP$parser$actions {
               Node RESULT =null;
 		
                     RESULT = new BaseNode(NodeType.RETURN_STATEMENT);
+                    RESULT.addChild(new BaseNode(NodeType.EMPTY_NODE));
                 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("ReturnStatement",19, ((java_cup.runtime.Symbol)CUP$parser$stack.elementAt(CUP$parser$top-1)), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
