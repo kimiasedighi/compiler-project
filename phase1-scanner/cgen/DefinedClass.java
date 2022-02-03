@@ -64,7 +64,7 @@ public class DefinedClass {
 
     @Override
     public String toString() {
-        return "ClassDecaf{" +
+        return "Defined Class{" +
                 "name='" + name + '\'' +
                 ", methods=" + methods +
                 ", fields=" + fields + '\'' +

@@ -26,7 +26,7 @@ public class SymbolTable implements Symbol {
 
     void leaveScopeType(String scopeName) {
         for (Scope scope : scopes) {
-            System.out.println("finded Scope: " + scope.getName());
+            System.out.println("found Scope: " + scope.getName());
             if (scope.getName().equals(scopeName)) {
                 scopes.remove(scope);
                 System.out.println("scope find:" + scope);
@@ -50,7 +50,7 @@ public class SymbolTable implements Symbol {
             if (scopes.get(i).getVariables().containsKey(id))
                 return scopes.get(i).getVariables().get(id);
         }
-        throw new Exception("variable " + id + " did'nt declared");
+        throw new Exception("variable " + id + " didn't declared");
     }
 
     String getScopeNameOfIdentifier(String id) {
