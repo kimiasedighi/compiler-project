@@ -79,7 +79,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         /* dshuisdhuihdsu/*fuihfuahuhd */
-        File file3 = new File("D:\\University-term7\\compiler-project\\phase1-scanner\\compiler\\test.txt");
+        File file3 = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/test.txt");
         boolean result=Main.run(file3);
 
     }
