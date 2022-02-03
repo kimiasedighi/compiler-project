@@ -6,53 +6,36 @@ public enum PrimitiveType implements Type {
     DOUBLE(".float", 8),
     BOOL(".word", 1),
     STRING(".ascii", 6),
+    INPUTSTRING(".space", 12),
 
-    //todo
-    VOID("void", 0),
-    INPUTSTRING(".space", 12);
+    VOID("void", 0);
 
     private final String signature;
-    private final int align;
+    private final int memory;
 
-    PrimitiveType(String signature, int align) {
+    PrimitiveType(String signature, int memory) {
         this.signature = signature;
-        this.align = align;
+        this.memory = memory;
+    }
+
+    public String toString() {
+        return signature;
+    }
+
+    public PrimitiveType getPrimitive() {
+        return this;
     }
 
     public String getSignature() {
         return signature;
     }
 
-    public int getAlign() {
-        return align;
-    }
-
-
-    @Override
-    public String toString() {
-        return signature;
-    }
-
-
-    @Override
-    public PrimitiveType getPrimitive() {
-        return this;
+    public int getMemory() {
+        return memory;
     }
 
     public String getInitialValue() {
-        String value = "";
-        switch (this.signature) {
-            case ".word":
-                value = "0";
-                break;
-            case ".float":
-                value = "0.0";
-                break;
-            case ".ascii":
-                value = "\"\"";
-                break;
-        }
-        return value;
+        return this.signature.equals(".word") ? "0" : this.signature.equals(".float") ? "0.0" : "\"\"";
     }
 
 }

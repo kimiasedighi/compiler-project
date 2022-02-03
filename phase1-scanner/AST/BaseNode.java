@@ -28,56 +28,30 @@ public class BaseNode implements Node {
         return symbolInfo;
     }
 
-    @Override
     public String toString() {
-        String str = nodeType.toString();
-        if (symbolInfo != null) {
-            str += " (" + symbolInfo.toString() + ")";
-        }
-        return str;
+        return nodeType.toString() + (symbolInfo != null ? " (" + symbolInfo.toString() + ")" : "");
     }
 
-    @Override
     public void addChild(Node node) {
         children.add(node);
-    }
-
-    @Override
-    public void addChild(int index, Node node) {
-        children.add(index, node);
     }
 
     public void addChild(Node... nodes) {
         Collections.addAll(children, nodes);
     }
 
-    @Override
-    public void addChildren(List<Node> nodes) {
-        children.addAll(nodes);
-    }
-
-
-    @Override
-    public void setChildren(List<Node> nodes) {
-        children = nodes;
-    }
-
-    @Override
     public Node getChild(int index) {
         return children.get(index);
     }
 
-    @Override
     public List<Node> getChildren() {
         return children;
     }
 
-    @Override
     public Node getParent() {
         return parent;
     }
 
-    @Override
     public void setParent(Node parent) {
         this.parent = parent;
     }

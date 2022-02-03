@@ -14,6 +14,6 @@ public class DoubleLiteralNode extends Literal {
 
     @Override
     public String toString() {
-        return value + "";
+        return Float.toString(value);
     }
 }

@@ -2,23 +2,20 @@ package AST;
 
 public class IdentifierType implements Type {
     private String signature;
-    private int align = 10;
+    private int memory = 10;
 
     public IdentifierType(String signature) {
         this.signature = signature;
     }
 
-    @Override
     public String getSignature() {
         return signature;
     }
 
-    @Override
-    public int getAlign() {
-        return align;
+    public int getMemory() {
+        return memory;
     }
 
-    @Override
     public PrimitiveType getPrimitive() {
         return null;
     }

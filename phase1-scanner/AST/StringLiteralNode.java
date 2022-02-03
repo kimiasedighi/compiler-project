@@ -11,9 +11,4 @@ public class StringLiteralNode extends Literal {
     public String getValue() {
         return value;
     }
-
-    @Override
-    public String toString() {
-        return value+"";
-    }
 }

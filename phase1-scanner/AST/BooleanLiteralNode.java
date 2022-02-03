@@ -14,6 +14,6 @@ public class BooleanLiteralNode extends Literal {
 
     @Override
     public String toString() {
-        return value+"";
+        return value ? "true" : "false";
     }
 }

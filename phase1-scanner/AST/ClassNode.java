@@ -1,21 +1,10 @@
 package AST;
-//TODO
 
-import java.util.HashMap;
+
 
 public class ClassNode extends BaseNode {
-    //name of method -> signature
-    private HashMap<String, String> methodMap = new HashMap<>();
-
+    //TODO
     public ClassNode() {
         super(NodeType.CLASS_DECLARATION);
-    }
-
-    public void putMethodSig(String name, String sig) {
-        methodMap.put(name, sig);
-    }
-
-    public String getMethodSig(String name) {
-        return methodMap.get(name);
     }
 }

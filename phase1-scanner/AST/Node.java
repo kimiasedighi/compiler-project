@@ -13,6 +13,7 @@ public interface Node {
     //Gets the symbol info.
     SymbolInfo getSymbolInfo();
 
+
     //Adds a node to the end of the list of children.
     void addChild(Node node);
 
@@ -24,6 +25,5 @@ public interface Node {
     List<Node> getChildren();
 
     void setParent(Node parent);
-
     Node getParent();
 }

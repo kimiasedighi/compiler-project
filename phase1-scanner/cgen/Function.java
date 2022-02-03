@@ -17,28 +17,10 @@ public class Function {
     AccessMode accessMode = AccessMode.Public;
     public static Function currentFunction;
 
-    public Function(String name) {
-        Name = name;
-    }
-
     public Function(String name, SymbolInfo returnType, Scope scope) {
         Name = name;
         this.returnType = returnType;
         this.scope = scope;
-    }
-
-    public Function(String name, SymbolInfo returnType, Scope scope, List<SymbolInfo> argumentsType) {
-        Name = name;
-        this.returnType = returnType;
-        this.scope = scope;
-        this.argumentsType = argumentsType;
-    }
-
-
-    public Function(String name, SymbolInfo returnType, List<SymbolInfo> argumentsType) {
-        Name = name;
-        this.returnType = returnType;
-        this.argumentsType = argumentsType;
     }
 
     public String getName() {
@@ -53,16 +35,8 @@ public class Function {
         return returnType;
     }
 
-    public void setReturnType(SymbolInfo returnType) {
-        this.returnType = returnType;
-    }
-
     public Scope getScope() {
         return scope;
-    }
-
-    public void setScope(Scope scope) {
-        this.scope = scope;
     }
 
     public List<SymbolInfo> getArgumentsType() {
@@ -76,10 +50,6 @@ public class Function {
                 ", returnType=" + returnType +
                 ", scope=" + scope +
                 '}';
-    }
-
-    public void setArgumentsType(List<SymbolInfo> argumentsType) {
-        this.argumentsType = argumentsType;
     }
 
     @Override
@@ -96,19 +66,7 @@ public class Function {
         return Objects.hash(Name, scope);
     }
 
-    public AccessMode getAccessMode() {
-        return accessMode;
-    }
-
     public void setAccessMode(AccessMode accessMode) {
         this.accessMode = accessMode;
-    }
-
-    public static Function getCurrentFunction() {
-        return currentFunction;
-    }
-
-    public static void setCurrentFunction(Function currentFunction) {
-        Function.currentFunction = currentFunction;
     }
 }

@@ -24,20 +24,6 @@ public class SymbolTable implements Symbol {
         currentScope = scopes.get(scopes.size() - 1);
     }
 
-    void leaveScopeType(String scopeName) {
-        for (Scope scope : scopes) {
-            System.out.println("found Scope: " + scope.getName());
-            if (scope.getName().equals(scopeName)) {
-                scopes.remove(scope);
-                System.out.println("scope find:" + scope);
-                if (scope.equals(currentScope)) {
-                    currentScope = scopes.get(scopes.size() - 1);
-                }
-                break;
-            }
-        }
-    }
-
     void put(String id, SymbolInfo s) throws Exception {
         if (currentScope.getVariables().containsKey(id)) {
             throw new Exception("current scope already contains an entry for " + id);
@@ -63,14 +49,6 @@ public class SymbolTable implements Symbol {
 
     public String getCurrentScopeName() {
         return currentScope.getName();
-    }
-
-    boolean contains(String id) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
-            if (scopes.get(i).getVariables().containsKey(id))
-                return true;
-        }
-        return false;
     }
 
     public ArrayList<Scope> getScopes() {
