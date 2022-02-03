@@ -272,7 +272,7 @@ public class cgenVisitor implements Visitor {
         codeSegment += ".text\n" + "\t.globl main\n\n";
         codeSegment += "\tmain:\n";
 
-        symbolTable.enterScope("global");
+        symbolTable.scope_init("global");
         visitAllChildren(node);
 
         codeSegment += "\t\t#END OF PROGRAM\n";
@@ -308,7 +308,7 @@ public class cgenVisitor implements Visitor {
 
         String label = symbolTable.getCurrentScopeName() + "_" + funcName;
         codeSegment += "\t" + label + ":\n";
-        symbolTable.enterScope(label);
+        symbolTable.scope_init(label);
         codeSegment += "\t\tsw $ra,0($sp)\n";
         Node argumentsNode = node.getChild(2);
         visit(argumentsNode);
@@ -319,7 +319,7 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\tlw $ra,0($sp)\n";
         codeSegment += "\t\tjr $ra\n";
 
-        symbolTable.leaveCurrentScope();
+        symbolTable.scope_exit();
         if (symbolTable.getCurrentScopeName().equals("global")) {
             function.setAccessMode(AccessMode.Public);
         } else {
@@ -336,13 +336,13 @@ public class cgenVisitor implements Visitor {
             throw new Exception(className + " class declared before");
         DefinedClass.currentClass = definedClass;
         classes.add(definedClass);
-        symbolTable.enterScope(className);
+        symbolTable.scope_init(className);
         visitAllChildren(node);
         if (node.getChild(node.getChildren().size() - 1).getNodeType().equals(NodeType.FIELDS)) {
             //visit(node.getChild(node.getChildren().size() - 1));
             DefinedClass.currentClass.setObjectSize(DefinedClass.currentClass.getFields().size() * 4);
         }
-        symbolTable.leaveCurrentScope();
+        symbolTable.scope_exit();
     }
     /*..........*/
     private void visitVariableDeclaration(Node node) throws Exception {
@@ -383,7 +383,7 @@ public class cgenVisitor implements Visitor {
                     throw new Exception(typeName + " class not Declared");
                 dataSegment += "\t" + label + "\t" + ".space" + "\t" + definedClass.getObjectSize() + "\n";
             }
-            symbolTable.put(varName, node.getSymbolInfo());
+            symbolTable.add(varName, node.getSymbolInfo());
         }
 
     }
@@ -426,9 +426,9 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void visitBlockNode(Node node) throws Exception {
         if (node.getParent().getNodeType() != NodeType.FIELD_DECLARATION) {
-            symbolTable.enterScope("block_" + blockIndex++);
+            symbolTable.scope_init("block_" + blockIndex++);
             visitAllChildren(node);
-            symbolTable.leaveCurrentScope();
+            symbolTable.scope_exit();
         } else {
             visitAllChildren(node);
         }
@@ -1239,7 +1239,7 @@ public class cgenVisitor implements Visitor {
         Function method = null;
         for (Function function : functions) {
             if (function.getName().equals(varName)) {
-                for (Scope scope : symbolTable.getScopes()) {
+                for (Scope scope : symbolTable.getScopeList()) {
                     if (scope.equals(function.getScope())) {
                         method = function;
                         break;
