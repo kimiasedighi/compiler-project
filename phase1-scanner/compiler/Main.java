@@ -62,6 +62,9 @@ public class Main {
                 ProgramNode root = p.getRoot();
                 cgenVisitor cgenVisitor = new cgenVisitor();
                 cgenVisitor.visit(root);
+                FileWriter fileWriter2= new FileWriter(inputFile);
+                fileWriter2.write(cgenVisitor.mipsCode);
+                fileWriter2.flush();
                 return true;
             }catch (Exception ex){
                 System.out.println(ex.toString());
@@ -77,10 +80,5 @@ public class Main {
         //Laxer scanner = new Laxer(new FileReader(inputFile));
     }
 
-    public static void main(String[] args) throws Exception {
-        /* dshuisdhuihdsu/*fuihfuahuhd */
-        File file3 = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/test.txt");
-        boolean result=Main.run(file3);
 
-    }
 }
