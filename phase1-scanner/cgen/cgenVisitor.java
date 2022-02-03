@@ -8,6 +8,7 @@ public class cgenVisitor implements Visitor {
 
     String dataSegment="";
     String codeSegment="";
+    public  String mipsCode="";
     private SymbolTable symbolTable = new SymbolTable();
     private List<Function> functions = new ArrayList<>();
     public static List<DefinedClass> classes = new ArrayList<>();
@@ -277,8 +278,11 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t#END OF PROGRAM\n";
         codeSegment += "\t\tli $v0,10\n\t\tsyscall\n";
 
-        System.out.println(dataSegment);
-        System.out.println(codeSegment);
+        mipsCode=dataSegment.concat(codeSegment);
+
+//        System.out.println(dataSegment);
+//        System.out.println(codeSegment);
+        System.out.println(mipsCode);
     }
 
     /*..........*/
