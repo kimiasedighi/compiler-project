@@ -6,8 +6,8 @@ import java.util.*;
 
 public class cgenVisitor implements Visitor {
 
-    String dataSegment;
-    String codeSegment;
+    String dataSegment="";
+    String codeSegment="";
     private SymbolTable symbolTable = new SymbolTable();
     private List<Function> functions = new ArrayList<>();
     public static List<DefinedClass> classes = new ArrayList<>();
@@ -41,7 +41,7 @@ public class cgenVisitor implements Visitor {
 
     private HashMap<String, String> stringLiterals = new HashMap<>();
     private int tempLiteralCounter = 0;
-
+    private int DtoItoBLabel = 0;
     @Override
     public void visit(Node node) throws Exception{
         switch (node.getNodeType()){
@@ -217,23 +217,22 @@ public class cgenVisitor implements Visitor {
             case READ_LINE:
                 visitReadLineNode(node);
                 break;
-            case NEW_IDENTIFIER:
-                //todo
+            case NEW_IDENTIFIER: //todo
                 break;
             case NEW_ARRAY:
                 visitNewArrayNode(node);
                 break;
             case ITOD:
-                //visitItoDNode(node); //todo add
+                visitItoDNode(node);
                 break;
             case DTOI:
-                //visitDtoINode(node); //todo add
+                visitDtoINode(node);
                 break;
             case ITOB:
-                //visitItoBNode(node); //todo add
+                visitItoBNode(node);
                 break;
             case BTOI:
-                //visitBtoINode(node); //todo add
+                visitBtoINode(node);
                 break;
             case LINE:
                 //visitLineNode(node); //todo write
@@ -345,6 +344,9 @@ public class cgenVisitor implements Visitor {
     private void visitVariableDeclaration(Node node) throws Exception {
         setParentSymbolInfo(node, node.getChild(0));
         IdentifierNode idNode = (IdentifierNode) node.getChild(1);
+        //test
+        idNode.setSymbolInfo(node.getSymbolInfo());
+        //
         String fieldName = idNode.getValue();
         if (DefinedClass.currentClass != null) {
             if (symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) {
@@ -635,18 +637,16 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitAssignNode(Node node) throws Exception {
-        Node lvalue = node.getChild(0);
+        Node lvalue =  node.getChild(0);
         setParentSymbolInfo(node, lvalue);
-        SymbolInfo varType = node.getChild(0).getSymbolInfo();
+        SymbolInfo varType = lvalue.getSymbolInfo();
         codeSegment += "\t\tla $a3, 0($a0) \n";
-
         Node expression = node.getChild(1);
         visit(expression);
         SymbolInfo exprType = expression.getSymbolInfo();
         if (exprType == null)
             throw new Exception("Assign Error");
-        //TODO
-        if (isTypesEqual(varType, exprType)) {
+      //  if (isTypesEqual(varType, exprType)) {
             switch (varType.getType().getAlign()) {
                 case 6: //string
                 case 1: //bool
@@ -662,9 +662,9 @@ public class cgenVisitor implements Visitor {
                 default:
                     break;
             }
-        } else {
-            throw new Exception("Type " + varType + " & " + exprType + " Doesn't Match");
-        }
+       // } else {
+          //  throw new Exception("Type " + varType + " & " + exprType + " Doesn't Match");
+       // }
     }
     /*..........*/
     private void visitAdditionNode(Node node) throws Exception {
@@ -955,9 +955,105 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\tsw $t2, 0($t0)\n";
     }
     /*..........*/
+    private void visitItoDNode(Node node) throws Exception {
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 4)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+        node.getSymbolInfo().setType(PrimitiveType.DOUBLE);
 
+        codeSegment += "\t\tmtc1 $t0 $f0\n";
+        codeSegment += "\t\tcvt.s.w $f0 $f0\n";
+
+    }
     /*..........*/
+    private void visitDtoINode(Node node) throws Exception {
 
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 8)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+
+        node.getSymbolInfo().setType(PrimitiveType.INT);
+
+        codeSegment += "\t\ts.s $f1, 0($sp)\n";
+        codeSegment += "\t\taddi $sp, $sp, 4\n";
+        codeSegment += "\t\ts.s $f2, 0($sp)\n";
+        codeSegment += "\t\taddi $sp, $sp, 4\n";
+
+        codeSegment += "\t\tmov.s $f1, $f0\n";
+        codeSegment += "\t\tcvt.w.s $f1, $f1\n";
+
+        codeSegment += "\t\tmfc1 $t0 $f1\n";
+        codeSegment += "\t\tmtc1 $t0 $f1\n";
+        codeSegment += "\t\tcvt.s.w $f1 $f1\n";
+
+        codeSegment += "\t\tsub.s $f1, $f0, $f1\n";
+
+
+        dataSegment += "\t" + symbolTable.getCurrentScopeName() + "_temp" + tempLiteralCounter + ": .float " + "0.5" + "\n";
+        codeSegment += "\t\tla $a0, " + symbolTable.getCurrentScopeName() + "_temp" + (tempLiteralCounter++) + '\n';
+        codeSegment += "\t\tl.s $f2, 0($a0)\n";
+
+        codeSegment += "\t\tc.eq.s $f1 $f2\n";
+        codeSegment += "\t\tbc1t " + "half_DtoI" + DtoItoBLabel + "\n";
+        codeSegment += "\t\tbc1f " + "nhalf_DtoI" + DtoItoBLabel + "\n";
+
+        codeSegment += "half_DtoI" + DtoItoBLabel + ":\n";
+        codeSegment += "\t\tceil.w.s $f0 $f0\n";
+        codeSegment += "\t\tmfc1 $t0 $f0\n";
+        codeSegment += "\t\tj exit_DtoI" + DtoItoBLabel + "\n";
+
+        codeSegment += "nhalf_DtoI" + DtoItoBLabel + ":\n";
+
+        dataSegment += "\t" + symbolTable.getCurrentScopeName() + "_temp" + tempLiteralCounter + ": .float " + "-0.5" + "\n";
+        codeSegment += "\t\tla $a0, " + symbolTable.getCurrentScopeName() + "_temp" + (tempLiteralCounter++) + '\n';
+        codeSegment += "\t\tl.s $f2, 0($a0)\n";
+
+        codeSegment += "\t\tc.eq.s $f1 $f2\n";
+        codeSegment += "\t\tbc1f " + "else_DtoI" + DtoItoBLabel + "\n";
+        codeSegment += "\t\tcvt.w.s $f0 $f0\n";
+        codeSegment += "\t\tmfc1 $t0 $f0\n";
+        codeSegment += "\t\tj exit_DtoI" + DtoItoBLabel + "\n";
+
+        codeSegment += "else_DtoI" + DtoItoBLabel + ":\n";
+
+        codeSegment += "\t\tround.w.s $f0 $f0\n";
+        codeSegment += "\t\tmfc1 $t0 $f0\n";
+
+        codeSegment += "exit_DtoI" + (DtoItoBLabel++) + ":\n";
+
+        codeSegment += "\t\taddi $sp, $sp, -4\n";
+        codeSegment += "\t\tl.s $f2, 0($sp)\n";
+        codeSegment += "\t\taddi $sp, $sp, -4\n";
+        codeSegment += "\t\tl.s $f1, 0($sp)\n";
+    }
+    /*..........*/
+    private void visitItoBNode(Node node) throws Exception {
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 4)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+        codeSegment += "\t\tbeq $t0 ,0 ItoB" + DtoItoBLabel + "\n";
+
+        codeSegment += "\t\tli $t0, 1\n";
+        codeSegment += "\t\tj exit_ItoB" + DtoItoBLabel + "\n";
+
+        codeSegment += "ItoB" + DtoItoBLabel + ":\n";
+        codeSegment += "\t\tli $t0, 0\n";
+
+        codeSegment += "exit_ItoB" + (DtoItoBLabel++) + ":\n";
+
+        node.getSymbolInfo().setType(PrimitiveType.BOOL);
+    }
+    /*..........*/
+    private void visitBtoINode(Node node) throws Exception {
+        setParentSymbolInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getSymbolInfo().getType().getAlign() == 1)) {
+            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
+        }
+        node.getSymbolInfo().setType(PrimitiveType.INT);
+    }
     /*..........*/
     private void visitLValueNode(Node node) throws Exception {
         visit(node.getChild(0));
@@ -1098,6 +1194,8 @@ public class cgenVisitor implements Visitor {
                 break;
         }
     }
+
+
     /*..helping functions..*/
     private DefinedClass findClass(String name) {
         for (DefinedClass c : classes) {
@@ -1126,7 +1224,7 @@ public class cgenVisitor implements Visitor {
     private boolean isTypesEqual(SymbolInfo a, SymbolInfo b) {
         if (a.getType().getAlign() == b.getType().getAlign()) {
             if (a.getType().getSignature().equals(b.getType().getSignature())) {
-                if (a.getDimensionArray() == b.getDimensionArray())
+               if (a.getDimensionArray() == b.getDimensionArray())
                     return a.getType().getPrimitive().equals(b.getType().getPrimitive());
             }
         }

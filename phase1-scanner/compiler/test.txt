@@ -1,3 +1,6 @@
-void main(){
-    int a;
+class a{
+
+void main(){b=2;
+}
+
 }
