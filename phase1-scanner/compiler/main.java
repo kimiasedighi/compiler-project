@@ -3,13 +3,12 @@ package compiler;
 import AST.ProgramNode;
 import cgen.cgenVisitor;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.util.Map;
 
 public class main {
 
-    public static boolean run(java.io.File inputFile) throws Exception {
+    public static String run(java.io.File inputFile) throws Exception {
         //StringBuilder str = new StringBuilder();
         /* dshuisdhuihdsu/*fuihfuahuhd */
         PreScanner preScanner = null;
@@ -62,13 +61,14 @@ public class main {
                 ProgramNode root = p.getRoot();
                 cgenVisitor cgenVisitor = new cgenVisitor();
                 cgenVisitor.visit(root);
-                FileWriter fileWriter2= new FileWriter(inputFile);
-                fileWriter2.write(cgenVisitor.mipsCode);
-                fileWriter2.flush();
-                return true;
+//                FileWriter fileWriter2= new FileWriter(inputFile);
+//                fileWriter2.write(cgenVisitor.mipsCode);
+//                fileWriter2.flush();
+                return cgenVisitor.mipsCode;
+
             }catch (Exception ex){
                 System.out.println(ex.toString());
-                return false;
+                return "code did not compiled!";
             }
 
         } catch (Exception e) {
@@ -76,7 +76,7 @@ public class main {
             e.printStackTrace();
         }
 
-        return false;
+        return "code did not compiled!";
         //Laxer scanner = new Laxer(new FileReader(inputFile));
     }
 
