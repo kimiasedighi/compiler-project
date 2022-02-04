@@ -47,7 +47,7 @@ public class cgenVisitor implements Visitor {
     public void visit(Node node) throws Exception{
         switch (node.getNodeType()){
             case START:
-                visitStartNode(node);
+                startNode_visit(node);
                 break;
             case INTEGER_TYPE:
                 node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.INT));
@@ -72,10 +72,10 @@ public class cgenVisitor implements Visitor {
             case EMPTY_ARRAY:
                 break;
             case DECLARATIONS:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case FUNCTION_DECLARATION:
-                visitFunctionDeclarationNode(node);
+                functionDeclarationNode_visit(node);
                 break;
             case CLASS_DECLARATION:
                 visitClassDeclarationNode(node);
@@ -84,27 +84,27 @@ public class cgenVisitor implements Visitor {
                 visitVariableDeclaration(node);
                 break;
             case VARIABLE_DECLARATIONS:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case FIELD_DECLARATION:
                 //todo
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case FIELDS:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
 //            case VARIABLE_PLUS_COMMA://they are function arguments in function declaration
 //                visitArgumentsNode(node);
 //                break;
             case ARGUMENT:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case ARGUMENTS:
                 visitArgumentsNode(node);
                 break;
             case EXPRESSION_PLUS_COMMA://they are expressions that we pass to functions when we call them
                 //todo
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case FUNCTION_ACCESS:
                 break;
@@ -116,16 +116,16 @@ public class cgenVisitor implements Visitor {
                 visitBlockNode(node);
                 break;
             case STATEMENTS:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case STATEMENT:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case IF_STATEMENT:
                 visitIfNode(node);
                 break;
             case ELSE_STATEMENT:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case WHILE_STATEMENT:
                 visitWhileNode(node);
@@ -253,7 +253,7 @@ public class cgenVisitor implements Visitor {
                 visitCallNode(node);
                 break;
             case ACTUALS:
-                visitAllChildren(node);
+                allChildren_visit(node);
                 break;
             case LITERAL:
                 visitLiteralNode(node);
@@ -266,36 +266,36 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
-    private void visitStartNode(Node node) throws Exception {
+    /********************** visit function for START **********************/
+    private void startNode_visit(Node node) throws Exception {
         dataSegment = ".data \n\ttrue: .asciiz \"true\"\n\tfalse : .asciiz \"false\"\n\n";
-        codeSegment += ".text\n" + "\t.globl main\n\n";
+        codeSegment += ".text\n" + "\t.global main\n\n";
         codeSegment += "\tmain:\n";
 
         symbolTable.enterScope("global");
-        visitAllChildren(node);
+        allChildren_visit(node);
 
-        codeSegment += "\t\t#END OF PROGRAM\n";
+        codeSegment += "\t\t#PROGRAM END\n";
         codeSegment += "\t\tli $v0,10\n\t\tsyscall\n";
 
-        mipsCode=dataSegment.concat(codeSegment);
+        mipsCode = dataSegment + codeSegment;
 
-//        System.out.println(dataSegment);
-//        System.out.println(codeSegment);
         System.out.println(mipsCode);
     }
 
-    /*..........*/
-    private void visitAllChildren(Node node) throws Exception {
-        for (Node child : node.getChildren()) {
-            visit(child);
+    /********** visit all child nodes of current node in a loop ***********/
+    private void allChildren_visit(Node node) throws Exception {
+        for (int i = 0; i < node.getChildren().size(); i++) {
+            visit(node.getChild(i));
         }
     }
+
+
     /*..........*/
-    private void visitFunctionDeclarationNode(Node node) throws Exception {
-        Node returnTypeNode = node.getChild(0); // type - identifier - void
-        visit(returnTypeNode);
-        SymbolInfo returnType = returnTypeNode.getSymbolInfo();
+    private void functionDeclarationNode_visit(Node node) throws Exception {
+        Node typeNode = node.getChild(0); // type - identifier - void
+        visit(typeNode);
+        SymbolInfo returnType = typeNode.getSymbolInfo();
 
         IdentifierNode idNode = (IdentifierNode) node.getChild(1); // identifier node
         String funcName = idNode.getValue(); // function name
@@ -337,7 +337,7 @@ public class cgenVisitor implements Visitor {
         DefinedClass.currentClass = definedClass;
         classes.add(definedClass);
         symbolTable.enterScope(className);
-        visitAllChildren(node);
+        allChildren_visit(node);
         if (node.getChild(node.getChildren().size() - 1).getNodeType().equals(NodeType.FIELDS)) {
             //visit(node.getChild(node.getChildren().size() - 1));
             DefinedClass.currentClass.setObjectSize(DefinedClass.currentClass.getFields().size() * 4);
@@ -427,10 +427,10 @@ public class cgenVisitor implements Visitor {
     private void visitBlockNode(Node node) throws Exception {
         if (node.getParent().getNodeType() != NodeType.FIELD_DECLARATION) {
             symbolTable.enterScope("block_" + blockIndex++);
-            visitAllChildren(node);
+            allChildren_visit(node);
             symbolTable.leaveCurrentScope();
         } else {
-            visitAllChildren(node);
+            allChildren_visit(node);
         }
     }
     /*..........*/

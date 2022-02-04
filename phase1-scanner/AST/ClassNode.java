@@ -1,7 +1,5 @@
 package AST;
 
-
-
 public class ClassNode extends BaseNode {
     //TODO
     public ClassNode() {

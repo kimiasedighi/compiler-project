@@ -36,7 +36,7 @@ public class SymbolTable implements Symbol {
             if (scopes.get(i).getVariables().containsKey(id))
                 return scopes.get(i).getVariables().get(id);
         }
-        throw new Exception("variable " + id + " didn't declared");
+        throw new Exception("variable " + id + " wasn't declared");
     }
 
     String getScopeNameOfIdentifier(String id) {
