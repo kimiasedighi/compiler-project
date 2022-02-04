@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class IdentifierType implements Type {
     private String signature;

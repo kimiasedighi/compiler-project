@@ -1,4 +1,4 @@
-package cgen;
+package compiler.cgen;
 
 public class Field {
     String name;

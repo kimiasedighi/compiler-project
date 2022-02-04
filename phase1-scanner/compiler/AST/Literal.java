@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public abstract class Literal extends BaseNode {
     private PrimitiveType type;

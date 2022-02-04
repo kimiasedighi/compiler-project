@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class IntegerLiteralNode extends Literal {
     private int value;

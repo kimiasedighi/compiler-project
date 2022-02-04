@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public interface Type {
     String getSignature();

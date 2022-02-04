@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class TypeNode extends BaseNode {
     private Type type;

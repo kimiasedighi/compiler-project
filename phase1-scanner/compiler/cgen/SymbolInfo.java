@@ -1,8 +1,8 @@
-package cgen;
+package compiler.cgen;
 
-import AST.Node;
-import AST.PrimitiveType;
-import AST.Type;
+import compiler.AST.Node;
+import compiler.AST.PrimitiveType;
+import compiler.AST.Type;
 
 public class SymbolInfo implements Symbol {
     private Node node;

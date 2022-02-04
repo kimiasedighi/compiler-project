@@ -1,8 +1,8 @@
 package compiler;
 import java_cup.runtime.*;
-import AST.*;
-import AST.Node;
-import AST.NodeType;
+import compiler.AST.*;
+import compiler.AST.Node;
+import compiler.AST.NodeType;
 
 parser code {:
      //LexerP s;

@@ -1,6 +1,6 @@
-package cgen;
+package compiler.cgen;
 
-import AST.Node;
+import compiler.AST.Node;
 
 public interface Visitor {
   void visit(Node node) throws Exception ;

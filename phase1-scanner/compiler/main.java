@@ -1,7 +1,7 @@
 package compiler;
 
-import AST.ProgramNode;
-import cgen.cgenVisitor;
+import compiler.AST.ProgramNode;
+import compiler.cgen.cgenVisitor;
 
 import java.io.FileWriter;
 import java.util.Map;
