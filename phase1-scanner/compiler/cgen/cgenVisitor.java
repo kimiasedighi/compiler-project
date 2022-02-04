@@ -245,8 +245,9 @@ public class cgenVisitor implements Visitor {
                 visitLValueNode(node);
                 break;
             case IDENTIFIER:
-                node.setTypeInfo(((IdentifierNode) node).getType().getType());
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
+
+                visit_identifier(node);
+//                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case CALL:
                 visitCallNode(node);
@@ -717,6 +718,16 @@ public class cgenVisitor implements Visitor {
             throw new Exception("Type " + firstType + " & " + secondType + " are mismatched");
         }
         codeSegment += "\t\t" + op2 + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
+    }
+    private void visit_identifier(Node node) throws Exception {
+        try {
+            IdentifierNode identifierNode=(IdentifierNode)node;
+           Type type= symbolTable.get(identifierNode.getName());
+             ((IdentifierNode) node).setType(new TypeNode(NodeType.IDENTIFIER,type));
+            node.setTypeInfo(type);
+        }catch (Exception ex){// identifier does not exist
+            throw new Exception("identifier "+((IdentifierNode)node).getName()+"not found!");
+        }
     }
     /*..........*/
     private void visitModNode(Node node) throws Exception {

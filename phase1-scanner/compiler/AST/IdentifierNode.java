@@ -1,5 +1,7 @@
 package compiler.AST;
 
+import compiler.cgen.SymbolTable;
+
 public class IdentifierNode extends BaseNode {
     private String name;
     private TypeNode type;
@@ -8,6 +10,7 @@ public class IdentifierNode extends BaseNode {
     public IdentifierNode(String name) {
         super(NodeType.IDENTIFIER);
         this.name = name;
+
     }
 
     public IdentifierNode(String name, Node type) {
