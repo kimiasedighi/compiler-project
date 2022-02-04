@@ -1,4 +1,4 @@
-
+//passed
 int num() {
     return 6;
 }

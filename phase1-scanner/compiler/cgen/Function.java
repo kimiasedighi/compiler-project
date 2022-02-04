@@ -19,10 +19,11 @@ public class Function {
     AccessMode accessMode = AccessMode.Public;
     public static Function currentFunction;
 
-    public Function(String name, Type returnType, Scope scope) {
+    public Function(String name, Type returnType, Scope scope,List<Type> argumentsType) {
         Name = name;
         this.returnType = returnType;
         this.scope = scope;
+        this.argumentsType=argumentsType;
     }
 
     public String getName() {

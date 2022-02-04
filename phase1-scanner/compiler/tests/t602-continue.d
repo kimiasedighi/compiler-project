@@ -1,3 +1,4 @@
+//passed
 int main()
 {
     int y;

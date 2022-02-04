@@ -1,3 +1,4 @@
+//passed
 int main() {
     bool b1;
     bool b2;

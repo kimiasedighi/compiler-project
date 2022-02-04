@@ -1,3 +1,4 @@
+//failed
 int[] ReadArray()
 {
   int i;

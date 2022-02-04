@@ -1,3 +1,4 @@
+//failed
 define funcName __func__
 import "file-to-import.d"
 define lineNumber __line__

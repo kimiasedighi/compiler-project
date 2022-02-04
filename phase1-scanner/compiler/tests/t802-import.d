@@ -1,3 +1,4 @@
+//failed
 import "file-to-import.d"
 
 int main() {

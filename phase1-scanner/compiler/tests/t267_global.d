@@ -1,3 +1,4 @@
+//failed
 int x;
 int[] y;
 int[] t;

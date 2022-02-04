@@ -1,4 +1,4 @@
-
+//passed
 int g;
 
 void test() {

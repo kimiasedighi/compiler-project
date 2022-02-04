@@ -1,4 +1,4 @@
-
+//passed
 void test() {
     Print("test successful!");
 }

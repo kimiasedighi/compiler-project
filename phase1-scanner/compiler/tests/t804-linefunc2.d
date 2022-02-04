@@ -1,3 +1,4 @@
+//failed
 void func__line__func() {
     int line;
     string func;

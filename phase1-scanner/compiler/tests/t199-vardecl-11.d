@@ -1,4 +1,4 @@
-
+//passed
 int main() {
     int t;
     t = 0;

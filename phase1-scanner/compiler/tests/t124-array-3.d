@@ -1,4 +1,4 @@
-
+//failed
 int main() {
     int[] ints;
 
