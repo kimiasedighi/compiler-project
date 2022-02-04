@@ -5,11 +5,9 @@
 
 package compiler;
 
-import java_cup.runtime.*;
-import AST.*;
-import AST.Node;
-import AST.NodeType;
-import java_cup.runtime.XMLElement;
+import compiler.AST.*;
+import compiler.AST.Node;
+import compiler.AST.NodeType;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
   */

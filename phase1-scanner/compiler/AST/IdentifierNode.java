@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class IdentifierNode extends BaseNode {
     private String value;

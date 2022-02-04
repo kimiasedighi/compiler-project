@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class ExpressionNode extends BaseNode {
     public ExpressionNode() {

@@ -1,4 +1,4 @@
-package cgen;
+package compiler.cgen;
 
 import java.util.ArrayList;
 import java.util.List;

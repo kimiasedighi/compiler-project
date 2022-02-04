@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class BooleanLiteralNode extends Literal {
     private boolean value;

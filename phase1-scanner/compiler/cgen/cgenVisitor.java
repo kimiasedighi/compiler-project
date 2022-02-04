@@ -1,6 +1,6 @@
-package cgen;
+package compiler.cgen;
 
-import AST.*;
+import compiler.AST.*;
 
 import java.util.*;
 

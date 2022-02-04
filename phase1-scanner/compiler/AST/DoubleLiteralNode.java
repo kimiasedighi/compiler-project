@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class DoubleLiteralNode extends Literal {
     private float value;

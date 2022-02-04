@@ -1,6 +1,6 @@
-package AST;
+package compiler.AST;
 
-import cgen.SymbolInfo;
+import compiler.cgen.SymbolInfo;
 import java.util.List;
 
 public interface Node {

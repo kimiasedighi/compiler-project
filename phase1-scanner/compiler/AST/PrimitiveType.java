@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public enum PrimitiveType implements Type {
 

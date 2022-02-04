@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class ProgramNode extends BaseNode {
     public ProgramNode() {

@@ -1,4 +1,4 @@
-package AST;
+package compiler.AST;
 
 public class ClassNode extends BaseNode {
     //TODO
