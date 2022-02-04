@@ -1,5 +1,7 @@
 package compiler.cgen;
 
+import compiler.AST.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,13 +13,13 @@ enum AccessMode {
 
 public class Function {
     String Name;
-    SymbolInfo returnType;
+    Type returnType;
     Scope scope;
-    List<SymbolInfo> argumentsType = new ArrayList<>();
+    List<Type> argumentsType = new ArrayList<>();
     AccessMode accessMode = AccessMode.Public;
     public static Function currentFunction;
 
-    public Function(String name, SymbolInfo returnType, Scope scope) {
+    public Function(String name, Type returnType, Scope scope) {
         Name = name;
         this.returnType = returnType;
         this.scope = scope;
@@ -31,7 +33,7 @@ public class Function {
         Name = name;
     }
 
-    public SymbolInfo getReturnType() {
+    public Type getReturnType() {
         return returnType;
     }
 
@@ -39,7 +41,7 @@ public class Function {
         return scope;
     }
 
-    public List<SymbolInfo> getArgumentsType() {
+    public List<Type> getArgumentsType() {
         return argumentsType;
     }
 

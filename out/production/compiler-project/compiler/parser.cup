@@ -1,8 +1,8 @@
 package compiler;
 import java_cup.runtime.*;
-import AST.*;
-import AST.Node;
-import AST.NodeType;
+import compiler.AST.*;
+import compiler.AST.Node;
+import compiler.AST.NodeType;
 
 parser code {:
      //LexerP s;
@@ -172,14 +172,14 @@ VariableDeclPlus ::= VariableDeclPlus:vdp VariableDecl:vd
               vd.setParent(RESULT);
             :}
             | VariableDecl:vd
-            {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATIONS);;
+            {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATIONS);
               RESULT.addChild(vd);
               vd.setParent(RESULT);
             :};
 
 Variable ::= Type:t IDENTIFIER:i
             {:RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
-              Node id = new IdentifierNode((String)i);
+              Node id = new IdentifierNode((String)i, t);
               RESULT.addChild(t);
               RESULT.addChild(id);
               t.setParent(RESULT);
@@ -195,10 +195,10 @@ Variable ::= Type:t IDENTIFIER:i
               id2.setParent(RESULT);
             :};
 
-Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INTEGER_TYPE, PrimitiveType.INT); :}
-       | DOUBLE {: RESULT = new TypeNode(NodeType.DOUBLE_TYPE, PrimitiveType.DOUBLE); :}
-       | BOOLEAN {: RESULT = new TypeNode(NodeType.BOOLEAN_TYPE, PrimitiveType.BOOL); :}
-       | STRING  {: RESULT = new TypeNode(NodeType.STRING_TYPE, PrimitiveType.STRING); :}
+Type ::= INTEGER {: RESULT = new TypeNode(NodeType.INTEGER_TYPE, new Type(".word", 4)); :}
+       | DOUBLE {: RESULT = new TypeNode(NodeType.DOUBLE_TYPE, new Type(".float", 8)); :}
+       | BOOLEAN {: RESULT = new TypeNode(NodeType.BOOLEAN_TYPE, new Type(".word", 1)); :}
+       | STRING  {: RESULT = new TypeNode(NodeType.STRING_TYPE, new Type(".ascii", 6)); :}
        | Type:t LEFTBRACKET RIGHTBRACKET
        {:
          RESULT = t;
@@ -258,22 +258,10 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
 			f.setParent(RESULT);
 			s.setParent(RESULT);
        :}
-        | IDENTIFIER:i1 IDENTIFIER:i2 LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
-        {:
-			RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-			Node id1 = new IdentifierNode((String)i1);
-			Node id2 = new IdentifierNode((String)i2);
-			Node f = new BaseNode(NodeType.ARGUMENTS);
-			RESULT.addChild(id1, id2, f, s);
-			id1.setParent(RESULT);
-			id2.setParent(RESULT);
-			f.setParent(RESULT);
-			s.setParent(RESULT);
-       :}
         | VOID IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS StatementBlock:s
          {:
             RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
+            Node t = new TypeNode(NodeType.VOID_TYPE, new Type("void", 0));
             Node id = new IdentifierNode((String)i);
             RESULT.addChild(t, id, f, s);
             t.setParent(RESULT);
@@ -284,19 +272,7 @@ FunctionDecl ::= Type:t IDENTIFIER:i LEFTPARANTHESIS Formals:f RIGHTPARANTHESIS 
         | VOID IDENTIFIER:i LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
          {:
             RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
-            Node id = new IdentifierNode((String)i);
-            Node f = new BaseNode(NodeType.ARGUMENTS);
-            RESULT.addChild(t, id, f, s);
-            t.setParent(RESULT);
-            id.setParent(RESULT);
-            f.setParent(RESULT);
-            s.setParent(RESULT);
-        :}
-        | VOID IDENTIFIER:i LEFTPARANTHESIS RIGHTPARANTHESIS StatementBlock:s
-         {:
-            RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
+            Node t = new TypeNode(NodeType.VOID_TYPE, new Type("void", 0));
             Node id = new IdentifierNode((String)i);
             Node f = new BaseNode(NodeType.ARGUMENTS);
             RESULT.addChild(t, id, f, s);

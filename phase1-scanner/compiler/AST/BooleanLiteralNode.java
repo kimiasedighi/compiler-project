@@ -4,7 +4,7 @@ public class BooleanLiteralNode extends Literal {
     private boolean value;
 
     public BooleanLiteralNode(boolean value) {
-        super(PrimitiveType.BOOL);
+        super(new Type(".word", 1));
         this.value = value;
     }
 

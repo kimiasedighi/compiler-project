@@ -50,24 +50,24 @@ public class cgenVisitor implements Visitor {
                 startNode_visit(node);
                 break;
             case INTEGER_TYPE:
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.INT));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(new Type(".word", 4));
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case DOUBLE_TYPE:
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.DOUBLE));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(new Type(".float", 8));
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case BOOLEAN_TYPE:
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.BOOL));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(new Type(".word", 1));
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case STRING_TYPE:
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.STRING));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(new Type(".ascii", 6));
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case VOID_TYPE:
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.VOID));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(new Type("void", 0));
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case EMPTY_ARRAY:
                 break;
@@ -245,9 +245,8 @@ public class cgenVisitor implements Visitor {
                 visitLValueNode(node);
                 break;
             case IDENTIFIER:
-                IdentifierNode idNode = (IdentifierNode) node;
-                node.setSymbolInfo(new SymbolInfo(node, new IdentifierType(idNode.getValue())));
-                node.getSymbolInfo().setDimensionArray(node.getChildren().size());
+                node.setTypeInfo(((IdentifierNode) node).getType().getType());
+                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case CALL:
                 visitCallNode(node);
@@ -295,10 +294,10 @@ public class cgenVisitor implements Visitor {
     private void functionDeclarationNode_visit(Node node) throws Exception {
         Node typeNode = node.getChild(0); // type - identifier - void
         visit(typeNode);
-        SymbolInfo returnType = typeNode.getSymbolInfo();
+        Type returnType = typeNode.getTypeInfo();
 
         IdentifierNode idNode = (IdentifierNode) node.getChild(1); // identifier node
-        String funcName = idNode.getValue(); // function name
+        String funcName = idNode.getName(); // function name
         Function function = new Function(funcName, returnType, symbolTable.getCurrentScope());
         if (functions.contains(function)) {
             throw new Exception(funcName + " function declared before");
@@ -330,7 +329,7 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void visitClassDeclarationNode(Node node) throws Exception {
         IdentifierNode idNode = (IdentifierNode) node.getChild(0);
-        String className = idNode.getValue();
+        String className = idNode.getName();
         DefinedClass definedClass = new DefinedClass(className);
         if (classes.contains(definedClass))
             throw new Exception(className + " class declared before");
@@ -346,17 +345,15 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitVariableDeclaration(Node node) throws Exception {
-        setParentSymbolInfo(node, node.getChild(0));
+        setParentTypeInfo(node, node.getChild(0));
         IdentifierNode idNode = (IdentifierNode) node.getChild(1);
-        //test
-        idNode.setSymbolInfo(node.getSymbolInfo());
-        //
-        String fieldName = idNode.getValue();
+
+        String fieldName = idNode.getName();
         if (DefinedClass.currentClass != null) {
             if (symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) {
                 // it is field not argument
                 Field field = new Field(fieldName);
-                field.setSymbolInfo(node.getSymbolInfo());
+                field.setSymbolInfo(node.getTypeInfo());
                 field.setAccessMode(Field.getCurrentAccessMode());
                 field.setDefinedClass(DefinedClass.currentClass);
                 if (DefinedClass.currentClass.getFields().contains(field))
@@ -366,31 +363,31 @@ public class cgenVisitor implements Visitor {
             }
         }
         if (DefinedClass.currentClass == null || !symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) {
-            String varName = idNode.getValue();
+            String varName = idNode.getName();
             String label = symbolTable.getCurrentScopeName() + "_" + varName + " :";
-            int dimensionArray = node.getSymbolInfo().getDimensionArray();
+            int dimensionArray = node.getTypeInfo().getArrayDimension();
             if (!node.getChild(0).getNodeType().equals(NodeType.IDENTIFIER)) { // so it has primitive type
-                Type typePrimitive = node.getSymbolInfo().getType();
+                Type typePrimitive = node.getTypeInfo();
                 if (dimensionArray == 0 && !typePrimitive.getSignature().equals(".ascii"))
-                    dataSegment += "\t" + label + " " + typePrimitive.getSignature() + " " + typePrimitive.getPrimitive().getInitialValue() + "\n";
+                    dataSegment += "\t" + label + " " + typePrimitive.getSignature() + " " + typePrimitive.getInitialValue() + "\n";
                 else
                     dataSegment += "\t" + label + " .word 0" + "\n";
             } else { // so it is an object of defined classes
                 IdentifierNode typeNode = (IdentifierNode) node.getChild(0);
-                String typeName = typeNode.getValue();
+                String typeName = typeNode.getName();
                 DefinedClass definedClass = findClass(typeName);
                 if (definedClass == null)
                     throw new Exception(typeName + " class not Declared");
                 dataSegment += "\t" + label + "\t" + ".space" + "\t" + definedClass.getObjectSize() + "\n";
             }
-            symbolTable.add(varName, node.getSymbolInfo());
+            symbolTable.add(varName, node.getTypeInfo());
         }
 
     }
     /*..........*/
     private void visitArgumentsNode(Node node) throws Exception {
         int argumentsLen = node.getChildren().size() * (-4);
-        Function function = Function.currentFunction;
+
         if (argumentsLen < 0)
             codeSegment += "\t\taddi $sp,$sp," + argumentsLen + "\n";
         for (int i = argumentsLen / (-4); i >= 1; i--) {
@@ -398,24 +395,24 @@ public class cgenVisitor implements Visitor {
             Node variable = ArgumentNode.getChild(0);
             visit(variable);
             IdentifierNode idNode = (IdentifierNode) variable.getChild(1);
-            String idName = idNode.getValue();
-            SymbolInfo si = variable.getSymbolInfo();
-            switch (si.getType().getMemory()) {
+            String idName = idNode.getName();
+            Type t = variable.getTypeInfo();
+            switch (t.getMemory()) {
                 case 1: //bool
                 case 4: // int
                 case 6: //String
                 case 10:
                     //TODO
-                    codeSegment += "\t\tla $a1, " + findNameOfId(idName) + '\n';
-                    codeSegment += "\t\tlw $t1, 0($sp)\n";
-                    codeSegment += "\t\tsw $t1, 0($a1)\n";
-                    codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
+                    codeSegment += "\t\tla $a1, " + findNameOfId(idName) + '\n'
+                                + "\t\tlw $t1, 0($sp)\n"
+                                + "\t\tsw $t1, 0($a1)\n"
+                                + "\t\taddi $sp, $sp, " + 4 + "\n";
                     break;
                 case 8: // float
-                    codeSegment += "\t\tla $a1, " + findNameOfId(idName) + '\n';
-                    codeSegment += "\t\tl.s $f1, 0($sp)\n";
-                    codeSegment += "\t\ts.s $f1, 0($a1)\n";
-                    codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
+                    codeSegment += "\t\tla $a1, " + findNameOfId(idName) + '\n'
+                                + "\t\tl.s $f1, 0($sp)\n"
+                                + "\t\ts.s $f1, 0($a1)\n"
+                                + "\t\taddi $sp, $sp, " + 4 + "\n";
                     break;
                 default:
                     break;
@@ -449,7 +446,7 @@ public class cgenVisitor implements Visitor {
 
         Node expression = node.getChild(0);
         visit(expression);
-        if (node.getChild(0).getSymbolInfo().getType().getMemory() == 1) {
+        if (node.getChild(0).getTypeInfo().getMemory() == 1) {
             codeSegment += "\t\tbeq " + regs.get(tempRegsNumber) + ", 0" + ", " + ifFalseLabel + "\n"; // $t0
         } else {
             throw new Exception("Invalid Expression in if expression");
@@ -557,16 +554,16 @@ public class cgenVisitor implements Visitor {
 
     private void visitReturnNode(Node node) throws Exception {
         Function method = Function.currentFunction;
-        SymbolInfo returnType = method.getReturnType();
+        Type returnType = method.getReturnType();
         visit(node.getChild(0));
-        if (node.getChild(0).getChild(0).equals(NodeType.EMPTY_NODE)){
+        if (node.getChild(0).getChild(0).getNodeType().equals(NodeType.EMPTY_NODE)){
             // it doesn't return anything
-            if (!returnType.getType().equals(PrimitiveType.VOID)){
+            if (!returnType.getSignature().equals("void")){
                 throw new Exception("Return type of " + method.getName() + " is incorrect");
             }
         }
 
-        if (!isTypesEqual(returnType, node.getChild(0).getSymbolInfo()))
+        if (!isTypesEqual(returnType, node.getChild(0).getTypeInfo()))
             throw new Exception("Return type of " + method.getName() + " is incorrect");
         codeSegment += "\t\taddi $sp,$sp,-4\n";
         codeSegment += "\t\tlw $ra,0($sp)\n";
@@ -586,44 +583,43 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitPrintNode(Node node) throws Exception {
-        Type exprType = PrimitiveType.INPUTSTRING;
+        Type exprType = new Type(".space", 12);
         Node printExpressionsNode = node.getChild(0);
         for (Node child : printExpressionsNode.getChildren()) { //child is each expression in print
             visit(child);
-            exprType = child.getSymbolInfo().getType();
+            exprType = child.getTypeInfo();
             switch (exprType.getMemory()) {
                 case 1: //bool
                     String generatedLabel = labelGenerator();
-                    codeSegment += "\t\tli $v0, 1\n";
-                    codeSegment += "\t\tbeq $t0, $zero, printFalse" + generatedLabel + "\n";
-                    codeSegment +=
-                            "\t\tla $t0, true\n" +
-                                    "\t\tli $v0, 4\n" +
-                                    "\t\tadd $a0, $t0, $zero\n" +
-                                    "\t\tsyscall\n" +
-                                    "\t\tb endPrintFalse" + generatedLabel + "\n" +
-                                    "\tprintFalse" + generatedLabel + ":\n" +
-                                    "\t\tla $t0, false\n" +
-                                    "\t\tli $v0, 4\n" +
-                                    "\t\tadd $a0, $t0, $zero\n" +
-                                    "\t\tsyscall\n" +
-                                    "\tendPrintFalse" + generatedLabel + ":\n";
+                    codeSegment += "\t\tli $v0, 1\n"
+                                + "\t\tbeq $t0, $zero, printFalse" + generatedLabel + "\n"
+                                + "\t\tla $t0, true\n"
+                                + "\t\tli $v0, 4\n"
+                                + "\t\tadd $a0, $t0, $zero\n"
+                                + "\t\tsyscall\n"
+                                + "\t\tb endPrintFalse" + generatedLabel + "\n"
+                                + "\tprintFalse" + generatedLabel + ":\n"
+                                + "\t\tla $t0, false\n"
+                                + "\t\tli $v0, 4\n"
+                                + "\t\tadd $a0, $t0, $zero\n"
+                                + "\t\tsyscall\n"
+                                + "\tendPrintFalse" + generatedLabel + ":\n";
                     break;
                 case 4: //int
-                    codeSegment += "\t\tli $v0, 1\n";
-                    codeSegment += "\t\tadd $a0, $t0, $zero\n";
-                    codeSegment += "\t\tsyscall\n";
+                    codeSegment += "\t\tli $v0, 1\n"
+                                +  "\t\tadd $a0, $t0, $zero\n"
+                                +  "\t\tsyscall\n";
                     break;
                 case 6://string
                 case 12:
-                    codeSegment += "\t\tli $v0, 4\n";
-                    codeSegment += "\t\tadd $a0, $t0, $zero\n";
-                    codeSegment += "\t\tsyscall\n";
+                    codeSegment += "\t\tli $v0, 4\n"
+                                +  "\t\tadd $a0, $t0, $zero\n"
+                                +  "\t\tsyscall\n";
                     break;
                 case 8://float
-                    codeSegment += "\t\tli $v0, 2\n";
-                    codeSegment += "\t\tmov.d\t$f12, $f0\n";
-                    codeSegment += "\t\tsyscall\n";
+                    codeSegment += "\t\tli $v0, 2\n"
+                                +  "\t\tmov.d\t$f12, $f0\n"
+                                +  "\t\tsyscall\n";
                     break;
                 default:
                     break;
@@ -637,21 +633,26 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void visitExpressionNode(Node node) throws Exception {
         tempRegsNumber = 8;
-        setParentSymbolInfo(node, node.getChild(0));
+        setParentTypeInfo(node, node.getChild(0));
     }
+
     /*..........*/
     private void visitAssignNode(Node node) throws Exception {
-        Node lvalue =  node.getChild(0);
-        setParentSymbolInfo(node, lvalue);
-        SymbolInfo varType = lvalue.getSymbolInfo();
+        IdentifierNode lvalue =  (IdentifierNode) node.getChild(0);
+//        setParentTypeInfo(node, lvalue);
+        Type varType = symbolTable.getCurrentScope().getVariables().get(lvalue.getName());
+
         codeSegment += "\t\tla $a3, 0($a0) \n";
+
         Node expression = node.getChild(1);
         visit(expression);
-        SymbolInfo exprType = expression.getSymbolInfo();
+        Type exprType = expression.getTypeInfo();
+
         if (exprType == null)
             throw new Exception("Assign Error");
-      //  if (isTypesEqual(varType, exprType)) {
-            switch (varType.getType().getMemory()) {
+
+        if (isTypesEqual(varType, exprType)) {
+            switch (varType.getMemory()) {
                 case 6: //string
                 case 1: //bool
                 case 4: // int
@@ -666,9 +667,9 @@ public class cgenVisitor implements Visitor {
                 default:
                     break;
             }
-       // } else {
-          //  throw new Exception("Type " + varType + " & " + exprType + " Doesn't Match");
-       // }
+        } else {
+            throw new Exception("Type " + varType + " & " + exprType + " Doesn't Match");
+        }
     }
     /*..........*/
     private void visitAdditionNode(Node node) throws Exception {
@@ -681,9 +682,9 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void Sub_ADD_Handler(Node node, String type) throws Exception {
 
-        setParentSymbolInfo(node, node.getChild(0));
-        SymbolInfo first = node.getSymbolInfo();
-        int firstType = first.getType().getMemory();
+        setParentTypeInfo(node, node.getChild(0));
+        Type first = node.getTypeInfo();
+        int firstType = first.getMemory();
 
         int tempReg = firstType == 4 ? tempRegsNumber : tempfRegsNumber;
         List<String> reg = firstType == 4 ? regs : fregs;
@@ -701,9 +702,9 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op3 + reg.get(tempReg + 1) + ", 0($sp)\n";
         codeSegment += "\t\taddi $sp, $sp, 4\n";
 
-        setParentSymbolInfo(node, node.getChild(1));
-        SymbolInfo second = node.getSymbolInfo();
-        String secondType = second.getType().getSignature();
+        setParentTypeInfo(node, node.getChild(1));
+        Type second = node.getTypeInfo();
+        String secondType = second.getSignature();
 
         codeSegment += "\t\taddi $sp, $sp, -4\n";
         codeSegment += "\t\t" + op4 + reg.get(tempReg + 1) + " 0($sp)\n";
@@ -730,9 +731,9 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void Mul_Mod_Div_Handler(Node node, String type) throws Exception {
 
-        setParentSymbolInfo(node, node.getChild(0));
-        SymbolInfo first = node.getSymbolInfo();
-        int firstType = first.getType().getMemory();
+        setParentTypeInfo(node, node.getChild(0));
+        Type first = node.getTypeInfo();
+        int firstType = first.getMemory();
         String main_type = type;
         int tempReg = firstType == 4 ? tempRegsNumber : tempfRegsNumber;
         List<String> reg = firstType == 4 ? regs : fregs;
@@ -756,9 +757,9 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op3 + reg.get(tempReg + 1) + ", 0($sp)\n";
         codeSegment += "\t\taddi $sp, $sp, 4\n";
 
-        setParentSymbolInfo(node, node.getChild(1));
-        SymbolInfo second = node.getSymbolInfo();
-        String secondType = second.getType().getSignature();
+        setParentTypeInfo(node, node.getChild(1));
+        Type second = node.getTypeInfo();
+        String secondType = second.getSignature();
 
         codeSegment += "\t\taddi $sp, $sp, -4\n";
         codeSegment += "\t\t" + op4 + reg.get(tempReg + 1) + " 0($sp)\n";
@@ -777,16 +778,16 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void visitNegativeNode(Node node) throws Exception {
         Node expression = node.getChild(0);
-        setParentSymbolInfo(node, expression);
+        setParentTypeInfo(node, expression);
         int type = 4;
         if (expression.getChild(0).getNodeType() == NodeType.LVALUE) {
             IdentifierNode idNode = (IdentifierNode) expression.getChild(0).getChild(0);
-            String varName = idNode.getValue();
-            SymbolInfo varType = (SymbolInfo) symbolTable.get(varName);
-            type = varType.getType().getMemory();
+            String varName = idNode.getName();
+            Type varType = symbolTable.get(varName);
+            type = varType.getMemory();
         } else if (expression.getChild(0).getNodeType() == NodeType.LITERAL) {
             Literal literalNode = (Literal) expression.getChild(0);
-            type = literalNode.getType().getMemory();
+            type = literalNode.getTypeInfo().getMemory();
         }
 
         if (type == 4) {
@@ -822,11 +823,11 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void LogicalOp1(Node node, String type) throws Exception {
         // for ==, >,...
-        setParentSymbolInfo(node, node.getChild(0));
-        SymbolInfo first = node.getSymbolInfo();
-        int firstType = first.getType().getMemory();
+        setParentTypeInfo(node, node.getChild(0));
+        Type first = node.getTypeInfo();
+        int firstType = first.getMemory();
 
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 4 || node.getChild(0).getSymbolInfo().getType().getMemory() == 8) && (!(type.equals("ne") || type.equals("eq")))) {
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 4 || node.getChild(0).getTypeInfo().getMemory() == 8) && (!(type.equals("ne") || type.equals("eq")))) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
 
@@ -842,15 +843,15 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op3 + reg.get(tempReg + 1) + ", 0($sp)\n";
         codeSegment += "\t\taddi $sp, $sp, 4\n";
 
-        setParentSymbolInfo(node, node.getChild(1));
-        SymbolInfo second = node.getSymbolInfo();
-        String secondType = second.getType().getSignature();
+        setParentTypeInfo(node, node.getChild(1));
+        Type second = node.getTypeInfo();
+        String secondType = second.getSignature();
 
         codeSegment += "\t\taddi $sp, $sp, -4\n";
         codeSegment += "\t\t" + op4 + reg.get(tempReg + 1) + " 0($sp)\n";
 
-        if (isTypesEqual(node.getChild(0).getSymbolInfo(), node.getChild(1).getSymbolInfo())) {
-            if (node.getChild(0).getSymbolInfo().getType().getMemory() == 8) {
+        if (isTypesEqual(node.getChild(0).getTypeInfo(), node.getChild(1).getTypeInfo())) {
+            if (node.getChild(0).getTypeInfo().getMemory() == 8) {
                 switch (op) {
                     case "c.gt.s ":
                         codeSegment += "\t\t" + "c.lt.s " + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
@@ -881,7 +882,7 @@ public class cgenVisitor implements Visitor {
             } else {
                 codeSegment += "\t\t" + op + reg.get(tempReg + 1) + ", " + reg.get(tempReg + 1) + ", " + reg.get(tempReg) + "\n";
             }
-            node.getSymbolInfo().setType(PrimitiveType.BOOL);
+            node.setTypeInfo(new Type(".word", 1));
         } else {
             throw new Exception("Type " + firstType + " & " + secondType + " are mismatched");
         }
@@ -898,8 +899,8 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void LogicalOp2(Node node, String op) throws Exception {
         // for and & or
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 1)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
 
@@ -907,12 +908,12 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + "sw " + "$t1" + ", 0($sp)\n";
         codeSegment += "\t\taddi $sp, $sp, 4\n";
 
-        setParentSymbolInfo(node, node.getChild(1));
+        setParentTypeInfo(node, node.getChild(1));
 
         codeSegment += "\t\taddi $sp, $sp, -4\n";
         codeSegment += "\t\t" + "lw " + "$t1" + ", 0($sp)\n";
 
-        if (isTypesEqual(node.getChild(0).getSymbolInfo(), node.getChild(1).getSymbolInfo())) {
+        if (isTypesEqual(node.getChild(0).getTypeInfo(), node.getChild(1).getTypeInfo())) {
             codeSegment += "\t\t" + op + " $t1, $t1, $t0\n";
         }
 
@@ -920,16 +921,16 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitNotNode(Node node) throws Exception {
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 1)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
         codeSegment += "\t\t" + "xori $t0, $t0, 1\n";
     }
     /*..........*/
     private void visitReadIntegerNode(Node node) {
-        SymbolInfo si = new SymbolInfo(node, PrimitiveType.INT);
-        node.setSymbolInfo(si);
+        Type t = new Type(".word", 4);
+        node.setTypeInfo(t);
         codeSegment += "\t\tli $v0, 5\n\t\tsyscall\n";
         codeSegment += "\t\tmove $t0, $v0\n\n";
     }
@@ -937,8 +938,7 @@ public class cgenVisitor implements Visitor {
     private void visitReadLineNode(Node node) {
         String label = "userInput_" + labelGenerator();
         dataSegment += "\t" + label + ":\t.space\t600\n";
-        SymbolInfo si = new SymbolInfo(node, PrimitiveType.INPUTSTRING);
-        node.setSymbolInfo(si);
+        node.setTypeInfo(new Type(".space", 12));
         codeSegment += "\t\tli $v0, 8\n\t\tla $a0, " + label + "\n\t\tli $a1, 600\n\t\tsyscall\n";
         codeSegment += "\t\tmove $t0, $a0\n\n";
     }
@@ -947,8 +947,8 @@ public class cgenVisitor implements Visitor {
 
         int literalNumber = ((IntegerLiteralNode) node.getChild(0).getChild(0)).getValue();
 
-        setParentSymbolInfo(node, node.getChild(1));
-        node.getSymbolInfo().setDimensionArray(node.getSymbolInfo().getDimensionArray() + 1);
+        setParentTypeInfo(node, node.getChild(1));
+        node.getTypeInfo().setArrayDimension(node.getTypeInfo().getArrayDimension() + 1);
         if (literalNumber <= 0)
             throw new Exception("array size must be greater than zero");
         String label = symbolTable.getCurrentScopeName() + "_NEW_ARRAY_" + arrayNumbers;
@@ -960,11 +960,11 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitItoDNode(Node node) throws Exception {
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 4)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 4)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
-        node.getSymbolInfo().setType(PrimitiveType.DOUBLE);
+        node.setTypeInfo(new Type(".float", 8));
 
         codeSegment += "\t\tmtc1 $t0 $f0\n";
         codeSegment += "\t\tcvt.s.w $f0 $f0\n";
@@ -973,12 +973,12 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void visitDtoINode(Node node) throws Exception {
 
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 8)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 8)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
 
-        node.getSymbolInfo().setType(PrimitiveType.INT);
+        node.setTypeInfo(new Type(".word", 4));
 
         codeSegment += "\t\ts.s $f1, 0($sp)\n";
         codeSegment += "\t\taddi $sp, $sp, 4\n";
@@ -1034,8 +1034,8 @@ public class cgenVisitor implements Visitor {
     }
     /*..........*/
     private void visitItoBNode(Node node) throws Exception {
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 4)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 4)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
         codeSegment += "\t\tbeq $t0 ,0 ItoB" + DtoItoBLabel + "\n";
@@ -1048,27 +1048,26 @@ public class cgenVisitor implements Visitor {
 
         codeSegment += "exit_ItoB" + (DtoItoBLabel++) + ":\n";
 
-        node.getSymbolInfo().setType(PrimitiveType.BOOL);
+        node.setTypeInfo(new Type(".word", 1));
     }
     /*..........*/
     private void visitBtoINode(Node node) throws Exception {
-        setParentSymbolInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getSymbolInfo().getType().getMemory() == 1)) {
+        setParentTypeInfo(node, node.getChild(0));
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
-        node.getSymbolInfo().setType(PrimitiveType.INT);
+        node.setTypeInfo(new Type(".word", 4));
     }
     /*..........*/
     private void visitLValueNode(Node node) throws Exception {
         visit(node.getChild(0));
         if (node.getChildren().size() == 1) { //id
             IdentifierNode idNode = (IdentifierNode) node.getChild(0);
-            String varName = idNode.getValue();
-            SymbolInfo varType = (SymbolInfo) symbolTable.get(varName);
-            SymbolInfo si = new SymbolInfo(node, varType.getType());
-            si.setDimensionArray(varType.getDimensionArray());
-            node.setSymbolInfo(si);
-            switch (varType.getType().getMemory()) {
+            String varName = idNode.getName();
+            Type varType = symbolTable.get(varName);
+
+            node.setTypeInfo(varType);
+            switch (varType.getMemory()) {
                 case 1: //bool
                 case 4: // int
                 case 6: //String
@@ -1090,11 +1089,11 @@ public class cgenVisitor implements Visitor {
                 visit(node.getChild(0));
                 codeSegment += "\t\tmove $a3, $t0\n";
                 codeSegment += "\t\tmove $s4, $a0\n";
-                SymbolInfo varType = node.getChild(0).getSymbolInfo();
+                Type varType = node.getChild(0).getTypeInfo();
                 visit(node.getChild(1));
-                SymbolInfo varType2 = node.getChild(1).getSymbolInfo();
-                if (varType2.getType().getMemory() == 4) {//int
-                    if (varType.getDimensionArray() > 0) {
+                Type varType2 = node.getChild(1).getTypeInfo();
+                if (varType2.getMemory() == 4) {//int
+                    if (varType.getArrayDimension() > 0) {
                         codeSegment += "\t\tli $t4, 4\n";
                         codeSegment += "\t\taddi $t0, $t0, 1\n";
                         codeSegment += "\t\tlw $t2, 0($a3)\n";
@@ -1107,9 +1106,8 @@ public class cgenVisitor implements Visitor {
                 } else
                     throw new Exception("error in array assign - index array");
 
-                SymbolInfo si = new SymbolInfo(node, varType.getType());
-                si.setDimensionArray(varType.getDimensionArray() - 1);
-                node.setSymbolInfo(si);
+                varType.setArrayDimension(varType.getArrayDimension() - 1);
+                node.setTypeInfo(varType);
             }
         }
 
@@ -1122,7 +1120,7 @@ public class cgenVisitor implements Visitor {
         for (Node child : node.getChildren()) {
             if (child.getNodeType().equals(NodeType.IDENTIFIER)) {
                 IdentifierNode idNode = (IdentifierNode) child;
-                varName = idNode.getValue();
+                varName = idNode.getName();
                 method = findFunction(varName);
                 if (method == null)
                     throw new Exception(varName + " function doesn't exist");
@@ -1131,12 +1129,12 @@ public class cgenVisitor implements Visitor {
 
                 for (Node childChild : child.getChild(0).getChildren()) {
                     visit(childChild);
-                    SymbolInfo si = childChild.getSymbolInfo();
+                    Type si = childChild.getTypeInfo();
                     if (!isTypesEqual(si, method.getArgumentsType().get(argNumber)))
                         throw new Exception("types doesn't match");
 
                     argNumber++;
-                    switch (si.getType().getMemory()) {
+                    switch (si.getMemory()) {
                         case 1: //bool
                         case 4: // int
                         case 6: //String
@@ -1161,12 +1159,12 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\tjal " + method.getScope().getName() + "_" + method.getName() + "\n";
         codeSegment += "\t\taddi $sp, $sp, " + (argNumber) * (-4) + "\n";
 
-        node.setSymbolInfo(method.getReturnType());
+        node.setTypeInfo(method.getReturnType());
     }
     /*..........*/
     private void visitLiteralNode(Node node) {
         Literal literalNode = (Literal) node;
-        node.setSymbolInfo(new SymbolInfo(node, literalNode.getType()));
+        node.setTypeInfo(literalNode.getType());
         switch (literalNode.getType().getMemory()) {
             case 6: //string
                 String str = ((StringLiteralNode) literalNode).getValue();
@@ -1174,7 +1172,8 @@ public class cgenVisitor implements Visitor {
                 str = str.replace("\\t","\\\\t");
                 str = str.replace("\\n","\\\\n");
                 String str_raw = str.substring(1, str.length() - 1);
-                String label = "";
+
+                String label;
                 if (!stringLiterals.keySet().contains(str_raw)) {
                     label = "StringLiteral_" + stringLiterals.keySet().size() + 1;
                     stringLiterals.put(str_raw, label);
@@ -1182,7 +1181,7 @@ public class cgenVisitor implements Visitor {
                 } else
                     label = stringLiterals.get(str_raw);
                 codeSegment += "\t\tla $t0, " + label + "\n";
-                node.setSymbolInfo(new SymbolInfo(node, PrimitiveType.STRING));
+                node.setTypeInfo(new Type(".ascii", 6));
                 break;
             case 1: //bool
                 String bool_type = node.toString().equals("true") ? "1" : "0";
@@ -1209,12 +1208,10 @@ public class cgenVisitor implements Visitor {
         return null;
     }
 
-    private void setParentSymbolInfo(Node node, Node child) throws Exception {
+    private void setParentTypeInfo(Node node, Node child) throws Exception {
         visit(child);
-        Type type = child.getSymbolInfo().getType();
-        SymbolInfo si = new SymbolInfo(node, type);
-        si.setDimensionArray(child.getSymbolInfo().getDimensionArray());
-        node.setSymbolInfo(si);
+        Type type = child.getTypeInfo();
+        node.setTypeInfo(type);
     }
 
     private String findNameOfId(String id) {
@@ -1225,11 +1222,11 @@ public class cgenVisitor implements Visitor {
         return "L" + (++labelIndex);
     }
 
-    private boolean isTypesEqual(SymbolInfo a, SymbolInfo b) {
-        if (a.getType().getMemory() == b.getType().getMemory()) {
-            if (a.getType().getSignature().equals(b.getType().getSignature())) {
-               if (a.getDimensionArray() == b.getDimensionArray())
-                    return a.getType().getPrimitive().equals(b.getType().getPrimitive());
+    private boolean isTypesEqual(Type a, Type b) {
+        if (a.getMemory() == b.getMemory()) {
+            if (a.getSignature().equals(b.getSignature())) {
+               if (a.getArrayDimension() == b.getArrayDimension())
+                    return true;
             }
         }
         return false;

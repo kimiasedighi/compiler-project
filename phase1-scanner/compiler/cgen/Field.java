@@ -1,8 +1,12 @@
 package compiler.cgen;
 
+import compiler.AST.Type;
+
+import java.util.Objects;
+
 public class Field {
     String name;
-    SymbolInfo symbolInfo;
+    Type symbolInfo;
     AccessMode accessMode = AccessMode.Public;
     DefinedClass definedClass = null;
     public static AccessMode currentAccessMode;
@@ -15,11 +19,11 @@ public class Field {
         this.name = name;
     }
 
-    public SymbolInfo getSymbolInfo() {
+    public Type getSymbolInfo() {
         return symbolInfo;
     }
 
-    public void setSymbolInfo(SymbolInfo symbolInfo) {
+    public void setSymbolInfo(Type symbolInfo) {
         this.symbolInfo = symbolInfo;
     }
 
@@ -66,8 +70,8 @@ public class Field {
 
         Field field = (Field) o;
 
-        if (name != null ? !name.equals(field.name) : field.name != null) return false;
-        return definedClass != null ? definedClass.equals(field.definedClass) : field.definedClass == null;
+        if (!Objects.equals(name, field.name)) return false;
+        return Objects.equals(definedClass, field.definedClass);
     }
 
     @Override

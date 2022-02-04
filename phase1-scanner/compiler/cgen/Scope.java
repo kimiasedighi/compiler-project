@@ -1,11 +1,14 @@
 package compiler.cgen;
 
+import compiler.AST.Type;
+
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Scope {
 
     private String name;
-    private HashMap<String, Symbol> variables;
+    private HashMap<String, Type> variables;
 
     public Scope(String name) {
         this.name = name;
@@ -23,7 +26,7 @@ public class Scope {
 
         Scope scope = (Scope) o;
 
-        return name != null ? name.equals(scope.name) : scope.name == null;
+        return Objects.equals(name, scope.name);
     }
 
     @Override
@@ -31,7 +34,7 @@ public class Scope {
         return name != null ? name.hashCode() : 0;
     }
 
-    public HashMap<String, Symbol> getVariables() {
+    public HashMap<String, Type> getVariables() {
         return variables;
     }
 

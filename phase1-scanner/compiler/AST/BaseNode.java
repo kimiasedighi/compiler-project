@@ -1,7 +1,5 @@
 package compiler.AST;
 
-import compiler.cgen.SymbolInfo;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +8,7 @@ public class BaseNode implements Node {
     private List<Node> children = new ArrayList<>();
     private Node parent;
     private NodeType nodeType;
-    SymbolInfo symbolInfo;
+    Type typeInfo;
 
     public BaseNode(NodeType nodeType) {
         this.nodeType = nodeType;
@@ -20,16 +18,16 @@ public class BaseNode implements Node {
         return nodeType;
     }
 
-    public void setSymbolInfo(SymbolInfo symbolInfo) {
-        this.symbolInfo = symbolInfo;
+    public void setTypeInfo(Type typeInfo) {
+        this.typeInfo = typeInfo;
     }
 
-    public SymbolInfo getSymbolInfo() {
-        return symbolInfo;
+    public Type getTypeInfo() {
+        return typeInfo;
     }
 
     public String toString() {
-        return nodeType.toString() + (symbolInfo != null ? " (" + symbolInfo.toString() + ")" : "");
+        return nodeType.toString() + typeInfo;
     }
 
     public void addChild(Node node) {

@@ -4,7 +4,7 @@ public class StringLiteralNode extends Literal {
     private String value;
 
     public StringLiteralNode(String value) {
-        super(PrimitiveType.STRING);
+        super(new Type(".ascii", 6));
         this.value = value;
     }
 

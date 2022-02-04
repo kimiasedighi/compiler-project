@@ -2,6 +2,7 @@ package compiler.cgen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class DefinedClass {
 
@@ -54,7 +55,7 @@ public class DefinedClass {
 
         DefinedClass that = (DefinedClass) o;
 
-        return name != null ? name.equals(that.name) : that.name == null;
+        return Objects.equals(name, that.name);
     }
 
     @Override

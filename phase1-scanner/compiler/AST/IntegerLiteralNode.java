@@ -4,7 +4,7 @@ public class IntegerLiteralNode extends Literal {
     private int value;
 
     public IntegerLiteralNode(int value) {
-        super(PrimitiveType.INT);
+        super(new Type(".word", 4));
         this.value = value;
     }
 

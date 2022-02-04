@@ -1,14 +1,14 @@
 package compiler.AST;
 
 public abstract class Literal extends BaseNode {
-    private PrimitiveType type;
+    private Type type;
 
-    public Literal(PrimitiveType type) {
+    public Literal(Type type) {
         super(NodeType.LITERAL);
         this.type = type;
     }
 
-    public PrimitiveType getType() {
+    public Type getType() {
         return type;
     }
 }

@@ -5,9 +5,11 @@
 
 package compiler;
 
+import java_cup.runtime.*;
 import compiler.AST.*;
 import compiler.AST.Node;
 import compiler.AST.NodeType;
+import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
   */
@@ -1191,7 +1193,7 @@ class CUP$parser$actions {
 		int vdleft = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).left;
 		int vdright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Node vd = (Node)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
-		RESULT= new BaseNode(NodeType.VARIABLE_DECLARATIONS);;
+		RESULT= new BaseNode(NodeType.VARIABLE_DECLARATIONS);
               RESULT.addChild(vd);
               vd.setParent(RESULT);
             
@@ -1210,7 +1212,7 @@ class CUP$parser$actions {
 		int iright = ((java_cup.runtime.Symbol)CUP$parser$stack.peek()).right;
 		Object i = (Object)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		RESULT= new BaseNode(NodeType.VARIABLE_DECLARATION);
-              Node id = new IdentifierNode((String)i);
+              Node id = new IdentifierNode((String)i, t);
               RESULT.addChild(t);
               RESULT.addChild(id);
               t.setParent(RESULT);
@@ -1246,7 +1248,7 @@ class CUP$parser$actions {
           case 17: // Type ::= INTEGER 
             {
               Node RESULT =null;
-		 RESULT = new TypeNode(NodeType.INTEGER_TYPE, PrimitiveType.INT); 
+		 RESULT = new TypeNode(NodeType.INTEGER_TYPE, new Type(".word", 4)); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Type",7, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1255,7 +1257,7 @@ class CUP$parser$actions {
           case 18: // Type ::= DOUBLE 
             {
               Node RESULT =null;
-		 RESULT = new TypeNode(NodeType.DOUBLE_TYPE, PrimitiveType.DOUBLE); 
+		 RESULT = new TypeNode(NodeType.DOUBLE_TYPE, new Type(".float", 8)); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Type",7, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1264,7 +1266,7 @@ class CUP$parser$actions {
           case 19: // Type ::= BOOLEAN 
             {
               Node RESULT =null;
-		 RESULT = new TypeNode(NodeType.BOOLEAN_TYPE, PrimitiveType.BOOL); 
+		 RESULT = new TypeNode(NodeType.BOOLEAN_TYPE, new Type(".word", 1)); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Type",7, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1273,7 +1275,7 @@ class CUP$parser$actions {
           case 20: // Type ::= STRING 
             {
               Node RESULT =null;
-		 RESULT = new TypeNode(NodeType.STRING_TYPE, PrimitiveType.STRING); 
+		 RESULT = new TypeNode(NodeType.STRING_TYPE, new Type(".ascii", 6)); 
               CUP$parser$result = parser.getSymbolFactory().newSymbol("Type",7, ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$parser$stack.peek()), RESULT);
             }
           return CUP$parser$result;
@@ -1441,7 +1443,7 @@ class CUP$parser$actions {
 		Node s = (Node)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		
             RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
+            Node t = new TypeNode(NodeType.VOID_TYPE, new Type("void", 0));
             Node id = new IdentifierNode((String)i);
             RESULT.addChild(t, id, f, s);
             t.setParent(RESULT);
@@ -1465,7 +1467,7 @@ class CUP$parser$actions {
 		Node s = (Node)((java_cup.runtime.Symbol) CUP$parser$stack.peek()).value;
 		
             RESULT = new BaseNode(NodeType.FUNCTION_DECLARATION);
-            Node t = new TypeNode(NodeType.VOID_TYPE, PrimitiveType.VOID);
+            Node t = new TypeNode(NodeType.VOID_TYPE, new Type("void", 0));
             Node id = new IdentifierNode((String)i);
             Node f = new BaseNode(NodeType.ARGUMENTS);
             RESULT.addChild(t, id, f, s);

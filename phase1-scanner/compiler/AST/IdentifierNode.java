@@ -1,19 +1,38 @@
 package compiler.AST;
 
 public class IdentifierNode extends BaseNode {
-    private String value;
+    private String name;
+    private TypeNode type;
 
-    public IdentifierNode(String value) {
+
+    public IdentifierNode(String name) {
         super(NodeType.IDENTIFIER);
-        this.value = value;
+        this.name = name;
     }
 
-    public String getValue() {
-        return value;
+    public IdentifierNode(String name, Node type) {
+        super(NodeType.IDENTIFIER);
+        this.name = name;
+        this.type = (TypeNode) type;
+        this.typeInfo = this.type.getType();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public TypeNode getType() {
+        return type;
+    }
+
+    public void setType(TypeNode type) {
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "%" + value;
+        return "%" + name;
     }
+
 }

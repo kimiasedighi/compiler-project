@@ -1,8 +1,10 @@
 package compiler.cgen;
 
+import compiler.AST.Type;
+
 import java.util.ArrayList;
 
-public class SymbolTable implements Symbol {
+public class SymbolTable {
 
     private ArrayList<Scope> scopeList = new ArrayList<>();
     private Scope currentScope;
@@ -39,18 +41,18 @@ public class SymbolTable implements Symbol {
                 return false;
         }
     }
-    private Symbol get_symbol(String id,int scopeNum){
+    private Type get_symbol(String id,int scopeNum){
         return scopeList.get(scopeNum).getVariables().get(id);
     }
-    void add(String id, SymbolInfo s) throws Exception {
+    void add(String id, Type t) throws Exception {
         if (!var_exist(id,-1)) {
-            currentScope.getVariables().put(id, s);
+            currentScope.getVariables().put(id, t);
         }else {
             throw new Exception("this scope already has " + id);
         }
     }
 
-    public Symbol get(String id) throws Exception {
+    public Type get(String id) throws Exception {
         for (int i = scopeList.size() - 1; i >= 0; i--) {
             if (var_exist(id,i))
                 return get_symbol(id,i);
