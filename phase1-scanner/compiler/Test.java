@@ -10,7 +10,7 @@ public class Test {
 //        File file2 = new File("C:\\Users\\dell\\IdeaProjects\\compiler-project\\phase1-scanner\\tests\\t14-macro2.in");
 //        String string2=Main.run(file2);
         /* dshuisdhuihdsu/*fuihfuahuhd */
-        File file3 = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/test.txt");
+        File file3 = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/tests/t260_for.d");
         String result= main.run(file3);
     }
 }

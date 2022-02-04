@@ -640,7 +640,7 @@ public class cgenVisitor implements Visitor {
     private void visitAssignNode(Node node) throws Exception {
         IdentifierNode lvalue =  (IdentifierNode) node.getChild(0);
 //        setParentTypeInfo(node, lvalue);
-        Type varType = symbolTable.getCurrentScope().getVariables().get(lvalue.getName());
+        Type varType = symbolTable.get(lvalue.getName());
 
         codeSegment += "\t\tla $a3, 0($a0) \n";
 
@@ -682,8 +682,10 @@ public class cgenVisitor implements Visitor {
     /*..........*/
     private void Sub_ADD_Handler(Node node, String type) throws Exception {
 
-        setParentTypeInfo(node, node.getChild(0));
-        Type first = node.getTypeInfo();
+//        setParentTypeInfo(node, node.getChild(0));
+        IdentifierNode idNode = (IdentifierNode) node.getChild(0).getChild(0);
+        Type first = symbolTable.get(idNode.getName());
+                //node.getTypeInfo();
         int firstType = first.getMemory();
 
         int tempReg = firstType == 4 ? tempRegsNumber : tempfRegsNumber;
