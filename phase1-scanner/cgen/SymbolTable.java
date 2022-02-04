@@ -3,56 +3,74 @@ package cgen;
 import java.util.ArrayList;
 
 public class SymbolTable implements Symbol {
-    private ArrayList<Scope> allScopes = new ArrayList<>();
-    private ArrayList<Scope> scopes = new ArrayList<>();
+
+    private ArrayList<Scope> scopeList = new ArrayList<>();
     private Scope currentScope;
 
     public Scope getCurrentScope() {
         return currentScope;
     }
 
-    public void enterScope(String scopeName) {
-        Scope newScope = new Scope(scopeName);
-        scopes.add(newScope);
-        allScopes.add(newScope);
-        currentScope = newScope;
-    }
-
-    public void leaveCurrentScope() {
-        if (currentScope != null)
-            scopes.remove(currentScope);
-        currentScope = scopes.get(scopes.size() - 1);
-    }
-
-    void put(String id, SymbolInfo s) throws Exception {
-        if (currentScope.getVariables().containsKey(id)) {
-            throw new Exception("current scope already contains an entry for " + id);
-        }
-        currentScope.getVariables().put(id, s);
-    }
-
-    public Symbol get(String id) throws Exception {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
-            if (scopes.get(i).getVariables().containsKey(id))
-                return scopes.get(i).getVariables().get(id);
-        }
-        throw new Exception("variable " + id + " wasn't declared");
-    }
-
-    String getScopeNameOfIdentifier(String id) {
-        for (int i = scopes.size() - 1; i >= 0; i--) {
-            if (scopes.get(i).getVariables().containsKey(id))
-                return scopes.get(i).getName();
-        }
-        return currentScope.getName();
-    }
-
     public String getCurrentScopeName() {
         return currentScope.getName();
     }
 
-    public ArrayList<Scope> getScopes() {
-        return scopes;
+    public void scope_init(String scopeName) {
+        Scope newScope = new Scope(scopeName);
+        currentScope = newScope;
+        scopeList.add(newScope);
     }
 
+    public void scope_exit() {
+        scope_delete();
+        currentScope = scopeList.get(scopeList.size() - 1);
+    }
+    private boolean var_exist(String id,int scopeNum){
+        if (scopeNum==-1){
+
+            if (currentScope.getVariables().containsKey(id))
+                return true;
+            else
+                return false;
+        }else {
+            if (scopeList.get(scopeNum).getVariables().containsKey(id))
+                return true;
+            else
+                return false;
+        }
+    }
+    private Symbol get_symbol(String id,int scopeNum){
+        return scopeList.get(scopeNum).getVariables().get(id);
+    }
+    void add(String id, SymbolInfo s) throws Exception {
+        if (!var_exist(id,-1)) {
+            currentScope.getVariables().put(id, s);
+        }else {
+            throw new Exception("this scope already has " + id);
+        }
+    }
+
+    public Symbol get(String id) throws Exception {
+        for (int i = scopeList.size() - 1; i >= 0; i--) {
+            if (var_exist(id,i))
+                return get_symbol(id,i);
+        }
+        throw new Exception( id + "is not defined");
+    }
+
+    String getScopeNameOfIdentifier(String id) {
+        for (int i = scopeList.size() - 1; i >= 0; i--) {
+            if (var_exist(id,i))
+                return scopeList.get(i).getName();
+        }
+        return currentScope.getName();
+    }
+
+    public ArrayList<Scope> getScopeList() {
+        return scopeList;
+    }
+    private void scope_delete(){ // this method deletes current scope from scope list
+        if (currentScope != null)
+            scopeList.remove(currentScope);
+    }
 }
