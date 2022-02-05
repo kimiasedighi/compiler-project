@@ -95,7 +95,6 @@ public class cgenVisitor implements Visitor {
                 visit_argumentsNode(node);
                 break;
             case EXPRESSION_PLUS_COMMA://they are expressions that we pass to functions when we call them
-                //todo
                 visit_allChildren(node);
                 break;
             case FUNCTION_ACCESS:
@@ -146,16 +145,16 @@ public class cgenVisitor implements Visitor {
                 visit_assignNode(node);
                 break;
             case ASSIGN_ADD:
-                visit_additionNode(node);
+                visit_assign_add(node);
                 break;
             case ASSIGN_SUB:
-                visit_subtractionNode(node);
+                visit_assign_sub(node);
                 break;
             case ASSIGN_MUL:
-                visit_multiplicationNode(node);
+                visit_assign_mul(node);
                 break;
             case ASSIGN_DIV:
-                visit_divisionNode(node);
+                visit_assign_div(node);
                 break;
             case THIS:
                 break;
@@ -1149,6 +1148,50 @@ public class cgenVisitor implements Visitor {
                 codeSegment += "\t\tl.s $f0, 0($a0)\n";
                 break;
         }
+    }
+    private void visit_assign_add(Node node) throws Exception {
+        Node assign=new BaseNode(NodeType.ASSIGN);
+        assign.addChild(node.getChild(0));
+        Node expr=new ExpressionNode();
+        expr.addChild(new BaseNode(NodeType.ADDITION));
+        expr.getChild(0).addChild(node.getChild(0));
+        expr.getChild(0).addChild(node.getChild(1));
+
+        assign.addChild(expr);
+        visit_assignNode(assign);
+    }
+    private void visit_assign_sub(Node node) throws Exception {
+        Node assign=new BaseNode(NodeType.ASSIGN);
+        assign.addChild(node.getChild(0));
+        Node expr=new ExpressionNode();
+        expr.addChild(new BaseNode(NodeType.SUBTRACTION));
+        expr.getChild(0).addChild(node.getChild(0));
+        expr.getChild(0).addChild(node.getChild(1));
+
+        assign.addChild(expr);
+        visit_assignNode(assign);
+    }
+    private void visit_assign_mul(Node node) throws Exception {
+        Node assign=new BaseNode(NodeType.ASSIGN);
+        assign.addChild(node.getChild(0));
+        Node expr=new ExpressionNode();
+        expr.addChild(new BaseNode(NodeType.MULTIPLICATION));
+        expr.getChild(0).addChild(node.getChild(0));
+        expr.getChild(0).addChild(node.getChild(1));
+
+        assign.addChild(expr);
+        visit_assignNode(assign);
+    }
+    private void visit_assign_div(Node node) throws Exception {
+        Node assign=new BaseNode(NodeType.ASSIGN);
+        assign.addChild(node.getChild(0));
+        Node expr=new ExpressionNode();
+        expr.addChild(new BaseNode(NodeType.DIVISION));
+        expr.getChild(0).addChild(node.getChild(0));
+        expr.getChild(0).addChild(node.getChild(1));
+
+        assign.addChild(expr);
+        visit_assignNode(assign);
     }
 
     /*..helping functions..*/
