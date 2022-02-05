@@ -1,4 +1,4 @@
-//???
+//passed
 int main(){
     if(true){
         int a;

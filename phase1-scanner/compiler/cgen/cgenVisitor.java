@@ -1,6 +1,5 @@
 package compiler.cgen;
 
-import com.sun.jdi.connect.Connector;
 import compiler.AST.*;
 
 import java.util.*;
@@ -53,23 +52,18 @@ public class cgenVisitor implements Visitor {
                 break;
             case INTEGER_TYPE:
                 node.setTypeInfo(new Type(".word", 4));
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case DOUBLE_TYPE:
                 node.setTypeInfo(new Type(".float", 8));
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case BOOLEAN_TYPE:
                 node.setTypeInfo(new Type(".word", 1));
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case STRING_TYPE:
                 node.setTypeInfo(new Type(".ascii", 6));
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case VOID_TYPE:
                 node.setTypeInfo(new Type("void", 0));
-                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case EMPTY_ARRAY:
                 break;
@@ -270,19 +264,27 @@ public class cgenVisitor implements Visitor {
 
     /********************** visit function for START **********************/
     private void startNode_visit(Node node) throws Exception {
-        dataSegment = ".data \n\ttrue: .asciiz \"true\"\n\tfalse : .asciiz \"false\"\n\n";
-        codeSegment += ".text\n" + "\t.global main\n\n";
-        codeSegment += "\tmain:\n";
+        try {
+            dataSegment = ".data \n\ttrue: .asciiz \"true\"\n\tfalse : .asciiz \"false\"\n\n";
+            codeSegment += ".text\n" + "\t.global main\n\n";
+            codeSegment += "\tmain:\n";
 
-        symbolTable.scope_init("global");
-        visit_allChildren(node);
+            symbolTable.scope_init("global");
 
-        codeSegment += "\t\t#PROGRAM END\n";
-        codeSegment += "\t\tli $v0,10\n\t\tsyscall\n";
+            visit_allChildren(node);
 
-        mipsCode = dataSegment + codeSegment;
+            codeSegment += "\t\t#PROGRAM END\n";
+            codeSegment += "\t\tli $v0,10\n\t\tsyscall\n";
 
-        System.out.println(mipsCode);
+            mipsCode = dataSegment + codeSegment;
+
+            System.out.println(mipsCode);
+        } catch (Exception e) {
+            mipsCode = e.getMessage();
+            System.out.println(e.getMessage());
+        }
+
+
     }
 
     /********** visit all child nodes of current node in a loop ***********/
@@ -292,7 +294,7 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
+    /*************** visit function declaration signature *****************/
     private void visit_functionDeclarationNode(Node node) throws Exception {
         Node typeNode = node.getChild(0); // type - identifier - void
         visit(typeNode);
@@ -301,8 +303,7 @@ public class cgenVisitor implements Visitor {
         IdentifierNode idNode = (IdentifierNode) node.getChild(1); // identifier node
         String funcName = idNode.getName(); // function name
         List<Type> args = new ArrayList<>();
-        for (Node n : node.getChild(2).getChildren()
-        ) {
+        for (Node n : node.getChild(2).getChildren()) {
             Node tempChild = n.getChild(0).getChild(0);
             switch (tempChild.getNodeType()) {
                 case INTEGER_TYPE:
@@ -360,53 +361,57 @@ public class cgenVisitor implements Visitor {
     }
 }
 
-    /*..........*/
+    /*********** visit class declaration and inside class scope ***********/
     private void visit_classDeclarationNode(Node node) throws Exception {
-        IdentifierNode idNode = (IdentifierNode) node.getChild(0);
-        String className = idNode.getName();
-        DefinedClass definedClass = new DefinedClass(className);
-        if (classes.contains(definedClass))
+        IdentifierNode idNode = (IdentifierNode) node.getChild(0); //identifier node for class name
+        String className = idNode.getName(); //class name
+        DefinedClass definedClass = new DefinedClass(className); //add class name to defined classes
+
+        if (classes.contains(definedClass)) //duplicate class name
             throw new Exception(className + " class declared before");
-        DefinedClass.currentClass = definedClass;
+
+        DefinedClass.currentClass = definedClass; //scope handle
         classes.add(definedClass);
-        symbolTable.scope_init(className);
+        symbolTable.scope_init(className); //add class to scopes
+
         visit_allChildren(node);
+
+        // if class has fields, set its size accorfing to fields size
         if (node.getChild(node.getChildren().size() - 1).getNodeType().equals(NodeType.FIELDS)) {
-            //visit(node.getChild(node.getChildren().size() - 1));
             definedClass.setObjectSize(definedClass.getFields().size() * 4);
         }
         symbolTable.scope_exit();
     }
 
-    /*..........*/
+    /*********** visit when variable is declared with identifier **********/
     private void visit_variableDeclarationNode(Node node) throws Exception {
         setNodeTypeInfo(node, node.getChild(0));
 
         IdentifierNode idNode = (IdentifierNode) node.getChild(1);
-        String fieldName = idNode.getName();
+        String fieldName = idNode.getName(); //variable name
 
-        if (DefinedClass.currentClass != null) {
+        if (DefinedClass.currentClass != null) { //if we are in class scope
             if (symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) {
                 // it is field not argument
                 Field field = new Field(fieldName);
-                field.setSymbolInfo(node.getTypeInfo());
+                field.setTypeInfo(node.getTypeInfo());
                 field.setAccessMode(Field.getCurrentAccessMode());
                 field.setDefinedClass(DefinedClass.currentClass);
                 if (DefinedClass.currentClass.getFields().contains(field))
                     throw new Exception(fieldName + " declared before");
                 else
-                    DefinedClass.currentClass.getFields().add(field);
+                    DefinedClass.currentClass.getFields().add(field); //add variable to current class fields if not duplicate
             }
         }
 
-        if (DefinedClass.currentClass == null || !symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) {
-            String varName = idNode.getName();
-            String label = symbolTable.getCurrentScopeName() + "_" + varName + " :";
-            int dimensionArray = node.getTypeInfo().getArrayDimension();
+        if (DefinedClass.currentClass == null || !symbolTable.getCurrentScopeName().equals(DefinedClass.currentClass.getName())) { //check scope
+
+            String label = symbolTable.getCurrentScopeName() + "_" + fieldName + " :";
+
             if (!node.getChild(0).getNodeType().equals(NodeType.IDENTIFIER)) { // so it has primitive type
-                Type typePrimitive = node.getTypeInfo();
-                if (dimensionArray == 0 && !typePrimitive.getSignature().equals(".ascii"))
-                    dataSegment += "\t" + label + " " + typePrimitive.getSignature() + " " + typePrimitive.getInitialValue() + "\n";
+                Type type = node.getTypeInfo();
+                if (!type.getSignature().equals(".ascii"))
+                    dataSegment += "\t" + label + " " + type.getSignature() + " " + type.getInitialValue() + "\n";
                 else
                     dataSegment += "\t" + label + " .word 0" + "\n";
             } else { // so it is an object of defined classes
@@ -417,20 +422,20 @@ public class cgenVisitor implements Visitor {
                     throw new Exception(typeName + " class not Declared");
                 dataSegment += "\t" + label + "\t" + ".space" + "\t" + definedClass.getObjectSize() + "\n";
             }
-            symbolTable.add(varName, node.getTypeInfo());
-        }
 
+            symbolTable.add(fieldName, node.getTypeInfo()); //add variable to scope map
+        }
     }
 
-    /*..........*/
+    /***************** visit function arguments with type *****************/
     private void visit_argumentsNode(Node node) throws Exception {
-        int argumentsLen = node.getChildren().size() * (-4);
+        int argumentsLen = node.getChildren().size();
 
-        if (argumentsLen < 0)
+        if (argumentsLen != 0)
             codeSegment += "\t\taddi $sp,$sp," + argumentsLen + "\n";
 
-        for (int i = argumentsLen / (-4); i >= 1; i--) {
-            Node ArgumentNode = node.getChild(i - 1);
+        for (int i = argumentsLen - 1; i >= 0; i--) {
+            Node ArgumentNode = node.getChild(i);
             Node variable = ArgumentNode.getChild(0);
             visit(variable);
             IdentifierNode idNode = (IdentifierNode) variable.getChild(1);
@@ -716,7 +721,7 @@ public class cgenVisitor implements Visitor {
                     break;
             }
         } else {
-            throw new Exception("Type " + varType + " & " + exprType + " Doesn't Match");
+            throw new Exception("Type " + varType.getSignature() + " & " + exprType.getSignature() + " Doesn't Match");
         }
     }
 
@@ -735,22 +740,6 @@ public class cgenVisitor implements Visitor {
         Node firstOperand = node.getChild(0);
         setNodeTypeInfo(node, firstOperand);
         Type first = node.getTypeInfo();
-
-//        if (firstOperand.getChildren().size()==1){
-//            if (firstOperand.getChild(0).getNodeType().equals(NodeType.IDENTIFIER)){
-//                IdentifierNode idNode = (IdentifierNode) firstOperand.getChild(0);
-//                firstType = symbolTable.get(idNode.getName());
-//            }else if (firstOperand.getChild(0).getNodeType().equals(NodeType.INTEGER_TYPE)){ //we have constant
-//                firstType = new Type(".word", 4);
-//            }else if (firstOperand.getChild(0).getNodeType().equals(NodeType.STRING_TYPE)){
-//                firstType= new Type(".ascii", 6);
-//            }else if(firstOperand.getChild(0).getNodeType().equals(NodeType.DOUBLE_TYPE)){
-//                firstType= new Type(".float", 8);
-//            }
-//        }else {
-//            visit(firstOperand);
-//            firstType = firstOperand.getTypeInfo();
-//        }
 
         int firstTypeMem = first.getMemory();
 
@@ -793,7 +782,7 @@ public class cgenVisitor implements Visitor {
             ((IdentifierNode) node).setType(new TypeNode(NodeType.IDENTIFIER, type));
             node.setTypeInfo(type);
         } catch (Exception ex) { // identifier does not exist
-            throw new Exception("identifier " + ((IdentifierNode) node).getName() + "not found!");
+            throw new Exception("identifier " + ((IdentifierNode) node).getName() + " not found!");
         }
     }
 
@@ -1046,7 +1035,6 @@ public class cgenVisitor implements Visitor {
 
         int literalNumber = ((IntegerLiteralNode) node.getChild(0).getChild(0)).getValue();
         setNodeTypeInfo(node, node.getChild(1));
-        node.getTypeInfo().setArrayDimension(node.getTypeInfo().getArrayDimension() + 1);
         if (literalNumber <= 0)
             throw new Exception("array size must be greater than zero");
         String label = symbolTable.getCurrentScopeName() + "_NEW_ARRAY_" + arrayNumbers;
@@ -1184,32 +1172,7 @@ public class cgenVisitor implements Visitor {
                     break;
             }
         } else {
-            if (node.getChild(1).getNodeType().equals(NodeType.IDENTIFIER)) {
                 //TODO
-            } else {
-                visit(node.getChild(0));
-                codeSegment += "\t\tmove $a3, $t0\n";
-                codeSegment += "\t\tmove $s4, $a0\n";
-                Type varType = node.getChild(0).getTypeInfo();
-                visit(node.getChild(1));
-                Type varType2 = node.getChild(1).getTypeInfo();
-                if (varType2.getMemory() == 4) {//int
-                    if (varType.getArrayDimension() > 0) {
-                        codeSegment += "\t\tli $t4, 4\n";
-                        codeSegment += "\t\taddi $t0, $t0, 1\n";
-                        codeSegment += "\t\tlw $t2, 0($a3)\n";
-                        codeSegment += "\t\tblt $t2, $t0, runtime_error\n";
-                        codeSegment += "\t\tmul $t0, $t0, $t4\n";
-                        codeSegment += "\t\tadd $a0, $a3, $t0\n";
-                        codeSegment += "\t\tlw $t0, 0($a0)\n";
-                    } else
-                        throw new Exception("error in array assign - type is not array");
-                } else
-                    throw new Exception("error in array assign - index array");
-
-                varType.setArrayDimension(varType.getArrayDimension() - 1);
-                node.setTypeInfo(varType);
-            }
         }
 
     }
@@ -1271,7 +1234,6 @@ public class cgenVisitor implements Visitor {
         switch (literalNode.getType().getMemory()) {
             case 6: //string
                 String str = ((StringLiteralNode) literalNode).getValue();
-                System.out.println(str);
                 str = str.replace("\\t", "\\\\t");
                 str = str.replace("\\n", "\\\\n");
                 String str_raw = str.substring(1, str.length() - 1);
@@ -1325,10 +1287,11 @@ public class cgenVisitor implements Visitor {
     }
 
     private boolean checkTypeEqual(Type a, Type b) {
+        if (b.getSignature().equals(".space") && a.getSignature().equals(".ascii") && a.getMemory() == 6)
+            return true;
         if (a.getMemory() == b.getMemory()) {
             if (a.getSignature().equals(b.getSignature())) {
-                if (a.getArrayDimension() == b.getArrayDimension())
-                    return true;
+                return true;
             }
         }
         return false;

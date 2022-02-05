@@ -22,13 +22,13 @@ do
     if [ $? -eq 1 ]; then
         echo "Code did not Compiler"
     else
-        echo "Core compiled successfuly"
+        echo "Core compiled successfully"
         java main -i $filelist -o $output_asm
         if [ $? -eq 0 ]; then
-            echo "Code Compiled Successfuly!"
+            echo "Code Compiled Successfully!"
             spim -a -f "$OUTPUT_DIRECTORY$output_asm" < "$TEST_DIRECTORY$program_input" > "$OUTPUT_DIRECTORY$output_filename"
             if [ $? -eq 0 ]; then
-                echo "Code Executed Successfuly!"
+                echo "Code Executed Successfully!"
                 if command -v python3; then
                     python3 comp.py -a "$OUTPUT_DIRECTORY$output_filename" -b "$TEST_DIRECTORY$output_filename" -o "$REPORT_DIRECTORY$report_filename"
                 else

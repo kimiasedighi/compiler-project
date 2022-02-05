@@ -1,4 +1,4 @@
-//??
+//passed
 string f() {
 	return "Hi";
 }

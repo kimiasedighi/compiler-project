@@ -3,6 +3,7 @@ package compiler;
 import compiler.AST.ProgramNode;
 import compiler.cgen.cgenVisitor;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.util.Map;
 
@@ -80,5 +81,16 @@ public class main {
         //Laxer scanner = new Laxer(new FileReader(inputFile));
     }
 
+    public static void main(String[] args) throws Exception {
 
+        File file = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/tests/" + args[0]);
+        String result= main.run(file);
+
+        File outputFile = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/out/" + args[1]);
+
+        FileWriter fileWriter= new FileWriter(outputFile);
+        fileWriter.write(result);
+        fileWriter.flush();
+
+    }
 }

@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class Field {
     String name;
-    Type symbolInfo;
+    Type typeInfo;
     AccessMode accessMode = AccessMode.Public;
     DefinedClass definedClass = null;
     public static AccessMode currentAccessMode;
@@ -19,25 +19,14 @@ public class Field {
         this.name = name;
     }
 
-    public Type getSymbolInfo() {
-        return symbolInfo;
-    }
-
-    public void setSymbolInfo(Type symbolInfo) {
-        this.symbolInfo = symbolInfo;
-    }
-
-    public AccessMode getAccessMode() {
-        return accessMode;
+    public void setTypeInfo(Type typeInfo) {
+        this.typeInfo = typeInfo;
     }
 
     public void setAccessMode(AccessMode accessMode) {
         this.accessMode = accessMode;
     }
 
-    public DefinedClass getDefinedClass() {
-        return definedClass;
-    }
 
     public void setDefinedClass(DefinedClass definedClass) {
         this.definedClass = definedClass;
@@ -47,9 +36,6 @@ public class Field {
         return currentAccessMode;
     }
 
-    public static void setCurrentAccessMode(AccessMode currentAccessMode) {
-        Field.currentAccessMode = currentAccessMode;
-    }
 
     public Field(String name) {
         this.name = name;
@@ -59,7 +45,7 @@ public class Field {
     public String toString() {
         return "Field{" +
                 "name='" + name + '\'' +
-                ", symbolInfo=" + symbolInfo +
+                ", typeInfo=" + typeInfo +
                 '}';
     }
 

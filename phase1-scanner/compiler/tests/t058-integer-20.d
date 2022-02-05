@@ -1,4 +1,4 @@
-//failed
+//passed
 int main() {
     int x;
     int y;

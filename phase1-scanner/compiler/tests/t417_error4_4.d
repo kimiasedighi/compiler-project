@@ -1,4 +1,4 @@
-//??
+//passed
 void f(int x, int y){
     return x + y;
 }

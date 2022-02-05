@@ -1,4 +1,4 @@
-//failed
+//passed
 int main() {
     Print(ReadInteger() - ReadInteger());
 }

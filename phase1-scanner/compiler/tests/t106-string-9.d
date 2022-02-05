@@ -1,4 +1,4 @@
-//failed
+//passed
 int main() {
     string s1;
     string s2;

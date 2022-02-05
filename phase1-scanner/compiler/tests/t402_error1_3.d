@@ -1,4 +1,4 @@
-//??
+//passed
 void f(int a){
     Print(a);
 }
