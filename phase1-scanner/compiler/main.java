@@ -1,7 +1,7 @@
 package compiler;
 
-import compiler.AST.ProgramNode;
-import compiler.cgen.cgenVisitor;
+import compiler.AST.*;
+import compiler.cgen.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -85,6 +85,7 @@ public class main {
 
         File file = new File(args[0]);
         String result= main.run(file);
+        System.out.println(result);
 
         File outputFile = new File(args[1]);
 

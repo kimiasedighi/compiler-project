@@ -14,7 +14,7 @@ public class cgenVisitor implements Visitor {
     public static List<DefinedClass> classes = new ArrayList<>();
 
     private int blockCounter;
-    private int labelIndex; // for generating label
+    private int labelCounter; // for generating label
     private Stack<String> labels = new Stack<>(); // use for break
 
     private int tempRegsNumber = 8;
@@ -42,7 +42,6 @@ public class cgenVisitor implements Visitor {
 
     private HashMap<String, String> stringLiterals = new HashMap<>();
     private int tempLiteralCounter = 0;
-    private int DtoItoBLabel = 0;
 
     @Override
     public void visit(Node node) throws Exception {
@@ -89,9 +88,6 @@ public class cgenVisitor implements Visitor {
             case FIELDS:
                 visit_allChildren(node);
                 break;
-//            case VARIABLE_PLUS_COMMA://they are function arguments in function declaration
-//                visitArgumentsNode(node);
-//                break;
             case ARGUMENT:
                 visit_allChildren(node);
                 break;
@@ -135,10 +131,10 @@ public class cgenVisitor implements Visitor {
                 visit_returnNode(node);
                 break;
             case BREAK_STATEMENT:
-                visit_breakNode(node);
+                visit_breakNode();
                 break;
             case CONTINUE_STATEMENT:
-                visit_continueNode(node);
+                visit_continueNode();
                 break;
             case PRINT_STATEMENT:
                 visit_printNode(node);
@@ -150,16 +146,16 @@ public class cgenVisitor implements Visitor {
                 visit_assignNode(node);
                 break;
             case ASSIGN_ADD:
-                //visitAssignAddNode(node); //todo write
+                visit_additionNode(node);
                 break;
             case ASSIGN_SUB:
-                //visitAssignSubNode(node); //todo write
+                visit_subtractionNode(node);
                 break;
             case ASSIGN_MUL:
-                //visitAssignMullNode(node); //todo write
+                visit_multiplicationNode(node);
                 break;
             case ASSIGN_DIV:
-                //visitAssignDivNode(node); //todo write
+                visit_divisionNode(node);
                 break;
             case THIS:
                 break;
@@ -216,23 +212,20 @@ public class cgenVisitor implements Visitor {
                 break;
             case NEW_IDENTIFIER: //todo
                 break;
-            case NEW_ARRAY:
-                visit_newArrayNode(node);
-                break;
             case ITOD:
                 visit_ItoDNode(node);
                 break;
             case DTOI:
-                visit_DtoINode(node);
+                //TODO
                 break;
             case ITOB:
-                visit_ItoBNode(node);
+                //TODO
                 break;
             case BTOI:
                 visit_BtoINode(node);
                 break;
             case LINE:
-                //visitLineNode(node); //todo write
+                //TODO
                 break;
             case FUNCTION:
                 //visitFunctionNode(node); //todo write
@@ -241,9 +234,7 @@ public class cgenVisitor implements Visitor {
                 visit_lValueNode(node);
                 break;
             case IDENTIFIER:
-
                 visit_identifier(node);
-//                node.getTypeInfo().setArrayDimension(node.getChildren().size());
                 break;
             case CALL:
                 visit_callNode(node);
@@ -266,7 +257,7 @@ public class cgenVisitor implements Visitor {
     private void startNode_visit(Node node) throws Exception {
         try {
             dataSegment = ".data \n\ttrue: .asciiz \"true\"\n\tfalse : .asciiz \"false\"\n\n";
-            codeSegment += ".text\n" + "\t.global main\n\n";
+            codeSegment += ".text\n" + "\t.globl main\n\n";
             codeSegment += "\tmain:\n";
 
             symbolTable.scope_init("global");
@@ -278,7 +269,7 @@ public class cgenVisitor implements Visitor {
 
             mipsCode = dataSegment + codeSegment;
 
-            System.out.println(mipsCode);
+//            System.out.println(mipsCode);
         } catch (Exception e) {
             mipsCode = e.getMessage();
             System.out.println(e.getMessage());
@@ -476,7 +467,7 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
+    /******************* visit and handle if or if else *******************/
     private void visit_ifNode(Node node) throws Exception {
 
         String elseLabel = generate_label();
@@ -518,25 +509,28 @@ public class cgenVisitor implements Visitor {
         codeSegment += elseLabel + "exit:\n";
     }
 
-    /*..........*/
+    /************************** visit while loop **************************/
     private void visit_whileNode(Node node) throws Exception {
         String label = generate_label();
         labels.push(label);
 
         codeSegment += "\t\t" + label + ":" + "\n";
+
         Node expression = node.getChild(0);
-        visit(expression);
+        visit(expression); //expression inside while paranthesis
+
         codeSegment += "\t\tbeq $t0, $zero exit" + label + "\n";
 
         Node statement = node.getChild(1);
-        visit(statement);
+        visit(statement); // statement in while block
+
         codeSegment += "\t\tj " + label + "\n";
         codeSegment += "\t\texit" + label + ":\n";
 
         labels.pop();
     }
 
-    /*..........*/
+    /******************* visit for loop with 4 types **********************/
     private void visit_forNode(Node node) throws Exception {
         String label = generate_label();
         label += "F";
@@ -546,52 +540,66 @@ public class cgenVisitor implements Visitor {
         Node expression2; //condition
         Node expression3; //update
         Node statement;
+
         int children_size = node.getChildren().size();
-        if (children_size == 4) {
+        if (children_size == 4) { //for ([1]i = 0; [2]i < n; [4]i++) [3]{}
             expression1 = node.getChild(0);
             visit(expression1);
+
             codeSegment += "\t\t" + label + ":" + "\n";
+
             expression2 = node.getChild(1);
             visit(expression2);
+
             codeSegment += "\t\tbeq $t0, $zero exit" + label + "\n";
+
             statement = node.getChild(2);
             visit(statement);
+
             codeSegment += "\t\t" + label + "update:\n";
+
             expression3 = node.getChild(3);
             visit(expression3);
+
             codeSegment += "\t\tj " + label + "\n";
             codeSegment += "\t\texit" + label + ":\n";
         } else if (children_size == 3) {
-            if (node.getChild(0).getChild(0).getNodeType().equals(NodeType.ASSIGN)) {
+            if (node.getChild(0).getChild(0).getNodeType().equals(NodeType.ASSIGN)) {//for ([1]i = 0; [2]i < n;) [3]{}
                 expression1 = node.getChild(0);
                 visit(expression1);
                 codeSegment += "\t\t" + label + ":" + "\n";
+
                 expression2 = node.getChild(1);
                 visit(expression2);
                 codeSegment += "\t\tbeq $t0, $zero exit" + label + "\n";
+
                 statement = node.getChild(2);
                 visit(statement);
                 codeSegment += "\t\t" + label + "update:\n";
-            } else {
+            } else { //for (; [2]i < n; [4]i++) [3]{}
                 codeSegment += "\t\t" + label + ":" + "\n";
                 expression2 = node.getChild(0);
                 visit(expression2);
+
                 codeSegment += "\t\tbeq $t0, $zero exit" + label + "\n";
                 statement = node.getChild(1);
                 visit(statement);
+
                 codeSegment += "\t\t" + label + "update:\n";
                 expression3 = node.getChild(2);
                 visit(expression3);
             }
             codeSegment += "\t\tj " + label + "\n";
             codeSegment += "\t\texit" + label + ":\n";
-        } else if (children_size == 2) {
+        } else if (children_size == 2) {//for (; [2]i < n;) [3]{}
             codeSegment += "\t\t" + label + ":" + "\n";
             expression2 = node.getChild(0);
             visit(expression2);
+
             codeSegment += "\t\tbeq $t0, $zero exit" + label + "\n";
             statement = node.getChild(1);
             visit(statement);
+
             codeSegment += "\t\t" + label + "update:\n";
             codeSegment += "\t\tj " + label + "\n";
             codeSegment += "\t\texit" + label + ":\n";
@@ -600,11 +608,13 @@ public class cgenVisitor implements Visitor {
         labels.pop();
     }
 
-    /*..........*/
+    /********************** visit function return *************************/
     private void visit_returnNode(Node node) throws Exception {
-        Function method = Function.currentFunction;
+        Function method = Function.currentFunction; //get current function
         Type returnType = method.getReturnType();
+
         visit(node.getChild(0));
+
         if (node.getChild(0).getChild(0).getNodeType().equals(NodeType.EMPTY_NODE)) {
             // it doesn't return anything
             if (!returnType.getSignature().equals("void")) {
@@ -612,21 +622,22 @@ public class cgenVisitor implements Visitor {
             }
         }
 
-        if (!checkTypeEqual(returnType, node.getChild(0).getTypeInfo()))
+        if (!checkTypeEqual(returnType, node.getChild(0).getTypeInfo())) //check return type with function type
             throw new Exception("Return type of " + method.getName() + " is incorrect");
+
         codeSegment += "\t\taddi $sp,$sp,-4\n";
         codeSegment += "\t\tlw $ra,0($sp)\n";
         codeSegment += "\t\tjr $ra\n";
 
     }
 
-    /*..........*/
-    private void visit_breakNode(Node node) {
+    /**** visit and handle break with removing label stack's top label ****/
+    private void visit_breakNode() {
         codeSegment += "\t\tj exit" + labels.peek() + "\n";
     }
 
-    /*..........*/
-    private void visit_continueNode(Node node) throws Exception {
+    /************* visit and handle continue with label stack *************/
+    private void visit_continueNode() {
         if (labels.peek().charAt(labels.peek().length() - 1) == 'F') {
             codeSegment += "\t\tj " + labels.peek() + "update\n";
         } else {
@@ -634,10 +645,11 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
+    /**************** visit printing ****************/
     private void visit_printNode(Node node) throws Exception {
         Type exprType = new Type(".space", 12);
         Node printExpressionsNode = node.getChild(0);
+
         for (Node child : printExpressionsNode.getChildren()) { //child is each expression in print
             visit(child);
             exprType = child.getTypeInfo();
@@ -678,19 +690,20 @@ public class cgenVisitor implements Visitor {
                     break;
             }
         }
+
         if (exprType.getMemory() != 12) {
             codeSegment += "\t\t#print new Line\n";
             codeSegment += "\t\taddi $a0, $0, 0xA\n\t\taddi $v0, $0, 0xB\n\t\tsyscall \n";
         }
     }
 
-    /*..........*/
+    /************************* visit expression ***************************/
     private void visit_expressionNode(Node node) throws Exception {
         tempRegsNumber = 8;
         setNodeTypeInfo(node, node.getChild(0));
     }
 
-    /*..........*/
+    /********** visit and handle assignment with type checking ************/
     private void visit_assignNode(Node node) throws Exception {
 
         IdentifierNode lvalue = (IdentifierNode) node.getChild(0);
@@ -724,18 +737,17 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
+
     private void visit_additionNode(Node node) throws Exception {
-        Sub_ADD_Handler(node, "add");
+        Sub_Add(node, "add");
     }
-
-    /*..........*/
     private void visit_subtractionNode(Node node) throws Exception {
-        Sub_ADD_Handler(node, "sub");
+        Sub_Add(node, "sub");
     }
 
-    /*..........*/
-    private void Sub_ADD_Handler(Node node, String type) throws Exception {
+
+    /******************* handle add and sub for visit *********************/
+    private void Sub_Add(Node node, String type) throws Exception {
         Node firstOperand = node.getChild(0);
         setNodeTypeInfo(node, firstOperand);
         Type first = node.getTypeInfo();
@@ -773,7 +785,7 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op2 + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
     }
 
-    /*..........*/
+    /********* visit identifier after it was declared (get value) *********/
     private void visit_identifier(Node node) throws Exception {
         try {
             IdentifierNode identifierNode = (IdentifierNode) node;
@@ -785,23 +797,19 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
+
     private void visit_modNode(Node node) throws Exception {
-        Mul_Mod_Div_Handler(node, "mod");
+        Mul_Mod_Div(node, "mod");
     }
-
-    /*..........*/
     private void visit_divisionNode(Node node) throws Exception {
-        Mul_Mod_Div_Handler(node, "div");
+        Mul_Mod_Div(node, "div");
     }
-
-    /*..........*/
     private void visit_multiplicationNode(Node node) throws Exception {
-        Mul_Mod_Div_Handler(node, "mul");
+        Mul_Mod_Div(node, "mul");
     }
 
-    /*..........*/
-    private void Mul_Mod_Div_Handler(Node node, String type) throws Exception {
+    /*************** handle mul and mod and div for visit ****************/
+    private void Mul_Mod_Div(Node node, String type) throws Exception {
 
         setNodeTypeInfo(node, node.getChild(0));
         Type first = node.getTypeInfo();
@@ -848,11 +856,13 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op2 + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
     }
 
-    /*..........*/
+    /************* visit negative before integer or double ***************/
     private void visit_negativeNode(Node node) throws Exception {
         Node expression = node.getChild(0);
         setNodeTypeInfo(node, expression);
         int type = 4;
+
+        //check integer or double
         if (expression.getChild(0).getNodeType() == NodeType.LVALUE) {
             IdentifierNode idNode = (IdentifierNode) expression.getChild(0).getChild(0);
             String varName = idNode.getName();
@@ -870,39 +880,28 @@ public class cgenVisitor implements Visitor {
         }
     }
 
-    /*..........*/
     private void visit_lessThanNode(Node node) throws Exception {
-        LogicalOp1(node, "lt");
+        compareOp(node, "lt");
     }
-
-    /*..........*/
     private void visit_lessEqualNode(Node node) throws Exception {
-        LogicalOp1(node, "le");
+        compareOp(node, "le");
     }
-
-    /*..........*/
     private void visit_greaterThanNode(Node node) throws Exception {
-        LogicalOp1(node, "gt");
+        compareOp(node, "gt");
     }
-
-    /*..........*/
     private void visit_greaterEqualNode(Node node) throws Exception {
-        LogicalOp1(node, "ge");
+        compareOp(node, "ge");
     }
-
-    /*..........*/
     private void visit_equalNode(Node node) throws Exception {
-        LogicalOp1(node, "eq");
+        compareOp(node, "eq");
     }
-
-    /*..........*/
     private void visit_notEqualNode(Node node) throws Exception {
-        LogicalOp1(node, "ne");
+        compareOp(node, "ne");
     }
 
-    /*..........*/
-    private void LogicalOp1(Node node, String type) throws Exception {
-        // for ==, >,...
+    /****************** handle logical operations *******************/
+    private void compareOp(Node node, String type) throws Exception {
+        // for ==, >, >=, <=, <
         setNodeTypeInfo(node, node.getChild(0));
         Type first = node.getTypeInfo();
         int firstType = first.getMemory();
@@ -969,18 +968,16 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + op2 + reg.get(tempReg) + ", " + reg.get(tempReg + 1) + "\n";
     }
 
-    /*..........*/
+
     private void visit_andNode(Node node) throws Exception {
-        LogicalOp2(node, "and");
+        logicalOp(node, "and");
     }
-
-    /*..........*/
     private void visit_orNode(Node node) throws Exception {
-        LogicalOp2(node, "and");
+        logicalOp(node, "and");
     }
 
-    /*..........*/
-    private void LogicalOp2(Node node, String op) throws Exception {
+
+    private void logicalOp(Node node, String op) throws Exception {
         // for and & or
         setNodeTypeInfo(node, node.getChild(0));
         if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
@@ -1003,142 +1000,49 @@ public class cgenVisitor implements Visitor {
         codeSegment += "\t\t" + "move $t0, $t1\n";
     }
 
-    /*..........*/
+    /****************** not before boolean visit *******************/
     private void visit_notNode(Node node) throws Exception {
         setNodeTypeInfo(node, node.getChild(0));
+
         if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
+
         codeSegment += "\t\t" + "xori $t0, $t0, 1\n";
     }
 
-    /*..........*/
+    /***************** visit read integer (type int) ***************/
     private void visit_readIntegerNode(Node node) {
         Type t = new Type(".word", 4);
         node.setTypeInfo(t);
-        codeSegment += "\t\tli $v0, 5\n\t\tsyscall\n";
-        codeSegment += "\t\tmove $t0, $v0\n\n";
+        codeSegment += "\t\tli $v0, 5\n\t\tsyscall\n"
+                    + "\t\tmove $t0, $v0\n\n";
     }
 
-    /*..........*/
+    /*************** visit readline (string of line) ***************/
     private void visit_readLineNode(Node node) {
         String label = "userInput_" + generate_label();
         dataSegment += "\t" + label + ":\t.space\t600\n";
+
         node.setTypeInfo(new Type(".space", 12));
-        codeSegment += "\t\tli $v0, 8\n\t\tla $a0, " + label + "\n\t\tli $a1, 600\n\t\tsyscall\n";
-        codeSegment += "\t\tmove $t0, $a0\n\n";
+
+        codeSegment += "\t\tli $v0, 8\n\t\tla $a0, " + label + "\n\t\tli $a1, 600\n\t\tsyscall\n"
+                    + "\t\tmove $t0, $a0\n\n";
     }
 
-    /*..........*/
-    private void visit_newArrayNode(Node node) throws Exception {
-
-        int literalNumber = ((IntegerLiteralNode) node.getChild(0).getChild(0)).getValue();
-        setNodeTypeInfo(node, node.getChild(1));
-        if (literalNumber <= 0)
-            throw new Exception("array size must be greater than zero");
-        String label = symbolTable.getCurrentScopeName() + "_NEW_ARRAY_" + arrayNumbers;
-        arrayNumbers++;
-        dataSegment += "\t" + label + ": .space " + (literalNumber + 1) * 4 + "\n";
-        codeSegment += "\t\tla $t0, " + label + "\n";
-        codeSegment += "\t\tli $t2, " + literalNumber + "\n";
-        codeSegment += "\t\tsw $t2, 0($t0)\n";
-    }
-
-    /*..........*/
+    /****************** integer to double visit ********************/
     private void visit_ItoDNode(Node node) throws Exception {
         setNodeTypeInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getTypeInfo().getMemory() == 4)) {
+        if (!(node.getChild(0).getTypeInfo().getMemory() == 4)) { //check if int
             throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
         }
-        node.setTypeInfo(new Type(".float", 8));
+        node.setTypeInfo(new Type(".float", 8)); //convert type to double
 
-        codeSegment += "\t\tmtc1 $t0 $f0\n";
-        codeSegment += "\t\tcvt.s.w $f0 $f0\n";
+        codeSegment += "\t\tmtc1 $t0 $f0\n"
+                    + "\t\tcvt.s.w $f0 $f0\n";
     }
 
-    /*..........*/
-    private void visit_DtoINode(Node node) throws Exception {
-
-        setNodeTypeInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getTypeInfo().getMemory() == 8)) {
-            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
-        }
-
-        node.setTypeInfo(new Type(".word", 4));
-
-        codeSegment += "\t\ts.s $f1, 0($sp)\n";
-        codeSegment += "\t\taddi $sp, $sp, 4\n";
-        codeSegment += "\t\ts.s $f2, 0($sp)\n";
-        codeSegment += "\t\taddi $sp, $sp, 4\n";
-
-        codeSegment += "\t\tmov.s $f1, $f0\n";
-        codeSegment += "\t\tcvt.w.s $f1, $f1\n";
-
-        codeSegment += "\t\tmfc1 $t0 $f1\n";
-        codeSegment += "\t\tmtc1 $t0 $f1\n";
-        codeSegment += "\t\tcvt.s.w $f1 $f1\n";
-
-        codeSegment += "\t\tsub.s $f1, $f0, $f1\n";
-
-
-        dataSegment += "\t" + symbolTable.getCurrentScopeName() + "_temp" + tempLiteralCounter + ": .float " + "0.5" + "\n";
-        codeSegment += "\t\tla $a0, " + symbolTable.getCurrentScopeName() + "_temp" + (tempLiteralCounter++) + '\n';
-        codeSegment += "\t\tl.s $f2, 0($a0)\n";
-
-        codeSegment += "\t\tc.eq.s $f1 $f2\n";
-        codeSegment += "\t\tbc1t " + "half_DtoI" + DtoItoBLabel + "\n";
-        codeSegment += "\t\tbc1f " + "nhalf_DtoI" + DtoItoBLabel + "\n";
-
-        codeSegment += "half_DtoI" + DtoItoBLabel + ":\n";
-        codeSegment += "\t\tceil.w.s $f0 $f0\n";
-        codeSegment += "\t\tmfc1 $t0 $f0\n";
-        codeSegment += "\t\tj exit_DtoI" + DtoItoBLabel + "\n";
-
-        codeSegment += "nhalf_DtoI" + DtoItoBLabel + ":\n";
-
-        dataSegment += "\t" + symbolTable.getCurrentScopeName() + "_temp" + tempLiteralCounter + ": .float " + "-0.5" + "\n";
-        codeSegment += "\t\tla $a0, " + symbolTable.getCurrentScopeName() + "_temp" + (tempLiteralCounter++) + '\n';
-        codeSegment += "\t\tl.s $f2, 0($a0)\n";
-
-        codeSegment += "\t\tc.eq.s $f1 $f2\n";
-        codeSegment += "\t\tbc1f " + "else_DtoI" + DtoItoBLabel + "\n";
-        codeSegment += "\t\tcvt.w.s $f0 $f0\n";
-        codeSegment += "\t\tmfc1 $t0 $f0\n";
-        codeSegment += "\t\tj exit_DtoI" + DtoItoBLabel + "\n";
-
-        codeSegment += "else_DtoI" + DtoItoBLabel + ":\n";
-
-        codeSegment += "\t\tround.w.s $f0 $f0\n";
-        codeSegment += "\t\tmfc1 $t0 $f0\n";
-
-        codeSegment += "exit_DtoI" + (DtoItoBLabel++) + ":\n";
-
-        codeSegment += "\t\taddi $sp, $sp, -4\n";
-        codeSegment += "\t\tl.s $f2, 0($sp)\n";
-        codeSegment += "\t\taddi $sp, $sp, -4\n";
-        codeSegment += "\t\tl.s $f1, 0($sp)\n";
-    }
-
-    /*..........*/
-    private void visit_ItoBNode(Node node) throws Exception {
-        setNodeTypeInfo(node, node.getChild(0));
-        if (!(node.getChild(0).getTypeInfo().getMemory() == 4)) {
-            throw new Exception("Invalid type for " + node.getNodeType().toString() + " operation");
-        }
-        codeSegment += "\t\tbeq $t0 ,0 ItoB" + DtoItoBLabel + "\n";
-
-        codeSegment += "\t\tli $t0, 1\n";
-        codeSegment += "\t\tj exit_ItoB" + DtoItoBLabel + "\n";
-
-        codeSegment += "ItoB" + DtoItoBLabel + ":\n";
-        codeSegment += "\t\tli $t0, 0\n";
-
-        codeSegment += "exit_ItoB" + (DtoItoBLabel++) + ":\n";
-
-        node.setTypeInfo(new Type(".word", 1));
-    }
-
-    /*..........*/
+    /***************** boolean to integer visit ********************/
     private void visit_BtoINode(Node node) throws Exception {
         setNodeTypeInfo(node, node.getChild(0));
         if (!(node.getChild(0).getTypeInfo().getMemory() == 1)) {
@@ -1147,7 +1051,7 @@ public class cgenVisitor implements Visitor {
         node.setTypeInfo(new Type(".word", 4));
     }
 
-    /*..........*/
+    /*************** left value of expression visit ****************/
     private void visit_lValueNode(Node node) throws Exception {
         visit(node.getChild(0));
         if (node.getChildren().size() == 1) { //id
@@ -1160,27 +1064,25 @@ public class cgenVisitor implements Visitor {
                 case 1: //bool
                 case 4: // int
                 case 6: //String
-                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n';
-                    codeSegment += "\t\tlw $t0, 0($a0)\n";
+                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n'
+                                +  "\t\tlw $t0, 0($a0)\n";
                     break;
                 case 8: // float
-                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n';
-                    codeSegment += "\t\tl.s $f0, 0($a0)\n";
+                    codeSegment += "\t\tla $a0, " + findNameOfId(varName) + '\n'
+                                +  "\t\tl.s $f0, 0($a0)\n";
                     break;
                 default:
                     break;
             }
-        } else {
-                //TODO
         }
-
     }
 
-    /*..........*/
+    /****** function call visit (checking function and args) *******/
     private void visit_callNode(Node node) throws Exception {
         String varName;
         Function method = null;
         int argNumber = 0;
+
         for (Node child : node.getChildren()) {
             if (child.getNodeType().equals(NodeType.IDENTIFIER)) {
                 IdentifierNode idNode = (IdentifierNode) child;
@@ -1198,33 +1100,22 @@ public class cgenVisitor implements Visitor {
                         throw new Exception("types doesn't match");
 
                     argNumber++;
-                    switch (si.getMemory()) {
-                        case 1: //bool
-                        case 4: // int
-                        case 6: //String
-                            codeSegment += "\t\tsw $t0, 0($sp)\n";
-                            codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
-                            break;
-                        case 8: // float
-                            codeSegment += "\t\tsw $t0, 0($sp)\n";
-                            codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
-                            break;
-                        default:
-                            break;
-                    }
+                    codeSegment += "\t\tsw $t0, 0($sp)\n"
+                                +  "\t\taddi $sp, $sp, " + 4 + "\n";
                 }
-
             }
         }
+
         if (argNumber != method.getArgumentsType().size())
             throw new Exception("expected " + method.getArgumentsType().size() + " args but " + argNumber + " passed");
-        codeSegment += "\t\tjal " + method.getScope().getName() + "_" + method.getName() + "\n";
-        codeSegment += "\t\taddi $sp, $sp, " + (argNumber) * (-4) + "\n";
+
+        codeSegment += "\t\tjal " + method.getScope().getName() + "_" + method.getName() + "\n"
+                    + "\t\taddi $sp, $sp, " + (argNumber) * (-4) + "\n";
 
         node.setTypeInfo(method.getReturnType());
     }
 
-    /*..........*/
+
     private void visit_literalNode(Node node) {
         Literal literalNode = (Literal) node;
         node.setTypeInfo(literalNode.getType());
@@ -1279,8 +1170,9 @@ public class cgenVisitor implements Visitor {
         return symbolTable.getScopeNameOfIdentifier(id) + "_" + id;
     }
 
+    /***** generate label for scope****/
     private String generate_label() {
-        return "L" + (++labelIndex);
+        return "L" + (++labelCounter);
     }
 
     private boolean checkTypeEqual(Type a, Type b) {
