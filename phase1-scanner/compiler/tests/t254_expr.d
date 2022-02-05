@@ -1,4 +1,4 @@
-//failed
+//passed
 int main()  {
     if(itob(1+2)){
         Print(1);
