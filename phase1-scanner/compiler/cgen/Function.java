@@ -23,7 +23,7 @@ public class Function {
         Name = name;
         this.returnType = returnType;
         this.scope = scope;
-        this.argumentsType=argumentsType;
+        this.argumentsType = argumentsType;
     }
 
     public String getName() {
