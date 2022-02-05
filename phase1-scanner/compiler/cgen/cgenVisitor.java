@@ -13,7 +13,7 @@ public class cgenVisitor implements Visitor {
     private List<Function> functions = new ArrayList<>();
     public static List<DefinedClass> classes = new ArrayList<>();
 
-    private int blockIndex;
+    private int blockCounter;
     private int labelIndex; // for generating label
     private Stack<String> labels = new Stack<>(); // use for break
 
@@ -437,16 +437,16 @@ public class cgenVisitor implements Visitor {
         for (int i = argumentsLen - 1; i >= 0; i--) {
             Node ArgumentNode = node.getChild(i);
             Node variable = ArgumentNode.getChild(0);
+
             visit(variable);
+
             IdentifierNode idNode = (IdentifierNode) variable.getChild(1);
-            String idName = idNode.getName();
+            String idName = idNode.getName(); //get name of idnode of function arg
             Type t = variable.getTypeInfo();
             switch (t.getMemory()) {
                 case 1: //bool
                 case 4: // int
                 case 6: //String
-                case 10:
-                    //TODO
                     codeSegment += "\t\tla $a1, " + findNameOfId(idName) + '\n'
                             + "\t\tlw $t1, 0($sp)\n"
                             + "\t\tsw $t1, 0($a1)\n"
@@ -462,13 +462,13 @@ public class cgenVisitor implements Visitor {
                     break;
             }
         }
-
     }
 
-    /*..........*/
+    /********************** visit for block scope *************************/
     private void visit_blockNode(Node node) throws Exception {
+        // handle block scope
         if (node.getParent().getNodeType() != NodeType.FIELD_DECLARATION) {
-            symbolTable.scope_init("block_" + blockIndex++);
+            symbolTable.scope_init("block_" + blockCounter++);
             visit_allChildren(node);
             symbolTable.scope_exit();
         } else {
@@ -482,6 +482,7 @@ public class cgenVisitor implements Visitor {
         String elseLabel = generate_label();
         tempRegsNumber = 8;
 
+        // check if or ifelse or invalid according to 2nd child
         String ifType;
         if (node.getChild(2).getNodeType().equals(NodeType.EMPTY_NODE)) {
             ifType = "if";
@@ -492,13 +493,14 @@ public class cgenVisitor implements Visitor {
 
         Node expression = node.getChild(0);
         visit(expression);
-        if (node.getChild(0).getTypeInfo().getMemory() == 1) {
+
+        if (node.getChild(0).getTypeInfo().getMemory() == 1) { //boolean check
             codeSegment += "\t\tbeq " + regs.get(tempRegsNumber) + ", 0" + ", " + elseLabel + "\n"; // $t0
         } else {
             throw new Exception("Invalid Expression in if expression");
         }
 
-        Node ifStatement = node.getChild(1);
+        Node ifStatement = node.getChild(1); //statement inside if block
         visit(ifStatement);
 
         codeSegment += "\t\tj " + elseLabel + "exit" + "\n";
@@ -507,7 +509,7 @@ public class cgenVisitor implements Visitor {
 
         if (ifType.equals("if_else")) {
             Node elseNode = node.getChild(2);
-            Node elseNodeStatement = elseNode.getChild(0);
+            Node elseNodeStatement = elseNode.getChild(0); //statement inside else block
             visit(elseNodeStatement);
         } else if (ifType.equals("invalid")) {
             throw new Exception("invalid if");
@@ -713,9 +715,6 @@ public class cgenVisitor implements Visitor {
                     break;
                 case 8: // float
                     codeSegment += "\t\ts.s $f0, 0($a3)\n";
-                    break;
-                case 10:
-                    //todo
                     break;
                 default:
                     break;
@@ -1203,8 +1202,6 @@ public class cgenVisitor implements Visitor {
                         case 1: //bool
                         case 4: // int
                         case 6: //String
-                        case 10:
-                            //TODO
                             codeSegment += "\t\tsw $t0, 0($sp)\n";
                             codeSegment += "\t\taddi $sp, $sp, " + 4 + "\n";
                             break;

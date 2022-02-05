@@ -13,14 +13,14 @@ public class main {
         //StringBuilder str = new StringBuilder();
         /* dshuisdhuihdsu/*fuihfuahuhd */
         PreScanner preScanner = null;
-        Map<String,String> definemap;
+        Map<String, String> definemap;
         try {
             java.io.FileInputStream stream = new java.io.FileInputStream(inputFile);
             java.io.Reader reader = new java.io.InputStreamReader(stream);
             preScanner = new PreScanner(reader);
 
             while (!preScanner.zzAtEOF) preScanner.yylex();
-            definemap=preScanner.definedMap;
+            definemap = preScanner.definedMap;
             FileWriter fileWriter= new FileWriter(inputFile);
             fileWriter.write(preScanner.out.toString());
             fileWriter.flush();
@@ -29,7 +29,7 @@ public class main {
                 java.io.FileInputStream stream2 = new java.io.FileInputStream(inputFile);
                 java.io.Reader reader2 = new java.io.InputStreamReader(stream2);
                 preScanner = new PreScanner(reader2);
-                preScanner.definedMap=definemap;
+                preScanner.definedMap = definemap;
                 while (!preScanner.zzAtEOF) preScanner.yylex();
 
                 FileWriter fileWriter2= new FileWriter(inputFile);
@@ -51,7 +51,7 @@ public class main {
 
         //PreScanner preScanner = new PreScanner(new FileReader(inputFile));
         //new FileWriter(inputFile).write(preScanner.out.toString());
-        LexerP scanner = null;
+        LexerP scanner;
         try {
             java.io.FileInputStream stream = new java.io.FileInputStream(inputFile);
             java.io.Reader reader = new java.io.InputStreamReader(stream);
@@ -67,8 +67,8 @@ public class main {
 //                fileWriter2.flush();
                 return cgenVisitor.mipsCode;
 
-            }catch (Exception ex){
-                System.out.println(ex.toString());
+            } catch (Exception ex){
+                System.out.println(ex.getMessage());
                 return "code did not compiled!";
             }
 
@@ -83,10 +83,10 @@ public class main {
 
     public static void main(String[] args) throws Exception {
 
-        File file = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/tests/" + args[0]);
+        File file = new File(args[0]);
         String result= main.run(file);
 
-        File outputFile = new File("/home/nanami/IdeaProjects/compiler-project/phase1-scanner/compiler/out/" + args[1]);
+        File outputFile = new File(args[1]);
 
         FileWriter fileWriter= new FileWriter(outputFile);
         fileWriter.write(result);
